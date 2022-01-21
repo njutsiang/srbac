@@ -70,6 +70,17 @@ Service-And-Role-Based Access Control 基于服务和角色的访问控制
   - 给用户分配数据权限节点
   - 用户的最终权限是所分配的角色和直接分配的权限节点的并集
 
+## APISIX 插件
+
+- business-upstream
+  - 企业动态路由插件，适用于 SaaS 企业平台，根据企业的付费等级动态路由，达到不同企业等级之间物理隔离的目的
+- rbac-access
+  - 动态鉴权的核心插件，实现基于 SRBAC 模型的动态鉴权
+- static-jwt-auth
+  - 相对于 APISIX 官方插件 jwt-auth 而言更轻量级的插件，它无需添加 consumer 既可以实现 auth 相关功能
+- token-auth
+  - 相对于 APISIX 官方插件 key-auth 而言更轻量级、扩展性更强的插件，依托 Redis 可以完成用户相关的更多的操作：可以动态维护用户状态、用户状态自动过期、APISIX 多节点集群数据共享
+
 ## APISIX 使用示例
 
 使用 business-upstream
