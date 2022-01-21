@@ -62,6 +62,7 @@ local function set_response_header_result(upstream_id)
 end
 
 -- 定义响应的错误
+-- Lua 是强类型，1 和 "1" 是不相等的
 local function get_response_error()
     core.response.set_header("Content-Type", "application/json")
     return 400, core.json.encode({
@@ -142,8 +143,17 @@ local function get_company_level(conf, company_id)
     return company_level
 end
 
+-- 清除用户自定义请求头
+local function clear_header()
+    ngx.req.clear_header('X-Company-Id')
+    ngx.req.clear_header('X-Company-Level')
+    ngx.req.clear_header('X-Apisix-Upstream-Id')
+end
+
 -- 在 access 阶段执行
 function _M.access(conf, ctx)
+    clear_header()
+
     -- 从 Header 或 Query 中获取 company_id
     local company_id = core.request.header(ctx, conf.header);
     if not company_id then

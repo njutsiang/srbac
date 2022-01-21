@@ -172,9 +172,15 @@ local function get_auth_items(red, user_id, roles, service)
     return result_items
 end
 
+-- 清除用户自定义请求头
+local function clear_header()
+    ngx.req.clear_header('X-User-Auth-Items')
+end
+
 -- 在 access 阶段执行
--- if "" => true
 function _M.access(conf, ctx)
+    clear_header()
+
     -- 实例化 Redis，超时时间为 1s
     local red = redis:new()
     red:set_timeouts(1000, 1000, 1000)

@@ -105,8 +105,18 @@ local function get_response_err(conf, message)
     end
 end
 
+-- 清除用户自定义请求头
+local function clear_header()
+    ngx.req.clear_header('X-JWT')
+    ngx.req.clear_header('X-JWT-Failed')
+    ngx.req.clear_header('X-User-Id')
+    ngx.req.clear_header('X-User-Data')
+end
+
 -- 在 rewrite 阶段执行
 function _M.rewrite(conf, ctx)
+    clear_header()
+
     -- 从请求头获取 JWT Token
     local jwt_token = core.request.header(ctx, conf.header)
 

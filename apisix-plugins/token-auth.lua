@@ -76,8 +76,15 @@ local function set_header(ctx, user_id, user_json)
     core.response.set_header("X-User-Data", user_json)
 end
 
+-- 清除用户自定义请求头
+local function clear_header()
+    ngx.req.clear_header('X-User-Id')
+    ngx.req.clear_header('X-User-Data')
+end
+
 -- 在 rewrite 阶段执行
 function _M.rewrite(conf, ctx)
+    clear_header()
 
     -- 从请求头获取 token，请求头的 Key 不区分大小写
     local token = core.request.header(ctx, conf.header)
@@ -89,7 +96,6 @@ function _M.rewrite(conf, ctx)
     end
 
     -- 如果 token 存在，就从 Redis 中去读取更多数据
-    -- 如果 token 不存在，获取到为 nil
     if not (token and token ~= "") then
         set_header(ctx, 0, "NULL")
         return nil
@@ -139,8 +145,9 @@ function _M.rewrite(conf, ctx)
         return nil
     end
 
+    -- 最终用户数据
     local user_data = core.json.decode(user_json)
-    if user_data then
+    if user_data and user_data.id then
         local user_id = tostring(user_data.id)
         ctx.user_id = user_id
         ctx.consumer_name = user_id
