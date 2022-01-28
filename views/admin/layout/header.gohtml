@@ -1,0 +1,31 @@
+{{define "header"}}
+<header class="box-shadow">
+    <div class="top-notice">
+        {{if .failed}}
+            <div class="alert alert-danger alert-dismissible fade show box-shadow" role="alert">
+                <i class="bi-exclamation-circle-fill"></i> {{.failed}}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {{end}}
+        {{if .success}}
+            <div class="alert alert-success alert-dismissible fade show box-shadow" role="alert">
+                <i class="bi-check-circle-fill"></i> {{.success}}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {{end}}
+    </div>
+    <a class="header-logo" href="/"></a>
+    <div class="header-split"></div>
+    <div class="header-title">SRBAC 基于服务和角色的访问控制</div>
+    <div class="dropdown user-info">
+        <a class="dropdown-toggle user-name" data-bs-toggle="dropdown" href="javascript:void(0);">刘强</a>
+        <ul class="dropdown-menu dropdown-menu-lg-end box-shadow">
+            <li><a class="dropdown-item" href="#"><i class="bi-person"></i> 个人信息</a></li>
+            <li><a class="dropdown-item" href="#"><i class="bi-key"></i> 修改密码</a></li>
+            <li><a class="dropdown-item" href="#"><i class="bi-gear"></i> 系统管理</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" href="#"><i class="bi-box-arrow-right"></i> 退出登录</a></li>
+        </ul>
+    </div>
+</header>
+{{end}}

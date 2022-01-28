@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+{{template "head" .}}
+</head>
+<body>
+{{template "header" .}}
+<main>
+    {{template "menu" .}}
+    <div class="main-container">
+        <div class="main-header">
+            <div class="main-title">{{.title}}</div>
+            <div class="main-path">
+                <a href="/admin">首页</a>
+                <i class="bi-chevron-right"></i>
+                <a href="/admin/api-item/list">接口节点管理</a>
+                <i class="bi-chevron-right"></i>
+                <span>{{.title}}</span>
+            </div>
+        </div>
+        <div class="main-content box-shadow">
+            <form method="post" action="{{.uri}}">
+                <table class="form-table">
+                    <tr>
+                        <td class="td1">
+                            <label for="service_id" class="form-label">所属服务</label>
+                        </td>
+                        <td>
+                            <select id="service_id" name="service_id" class="form-select">
+                                <option value="">-请选择-</option>
+                                {{range .serviceIds}}
+                                    <option value="{{.Key}}" {{if eq .Key $.apiItem.ServiceId}}selected="selected"{{end}}>{{.Value}}</option>
+                                {{end}}
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="td1">
+                            <label for="method" class="form-label">请求方式</label>
+                        </td>
+                        <td>
+                            <select id="method" name="method" class="form-select">
+                                <option value="">-请选择-</option>
+                                {{range .methods}}
+                                    <option value="{{.}}" {{if eq . $.apiItem.Method}}selected="selected"{{end}}>{{.}}</option>
+                                {{end}}
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="td1">
+                            <label for="uri" class="form-label">接口路由</label>
+                        </td>
+                        <td>
+                            <input type="text" id="uri" name="uri" class="form-control" {{if .apiItem.Uri}}value="{{.apiItem.Uri}}"{{end}} placeholder="请输入">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="td1">
+                            <label for="name" class="form-label">接口名称</label>
+                        </td>
+                        <td>
+                            <input type="text" id="name" name="name" class="form-control" {{if .apiItem.Name}}value="{{.apiItem.Name}}"{{end}} placeholder="请输入">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="td1">
+                            <label for="is_anonymous_access" class="form-label">匿名访问</label>
+                        </td>
+                        <td>
+                            <div class="form-check form-switch">
+                                <input type="checkbox" id="is_anonymous_access" name="is_anonymous_access" class="form-check-input" value="1" {{if eq .apiItem.IsAnonymousAccess 1}}checked="checked"{{end}}>
+                                <label class="form-check-label" for="is_anonymous_access">允许</label>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="td1"></td>
+                        <td><button type="submit" class="btn btn-primary">{{if .apiItem.Id}}保存{{else}}添加{{end}}</button></td>
+                    </tr>
+                </table>
+            </form>
+        </div>
+    </div>
+</main>
+{{template "footer" .}}
+</body>
+</html>

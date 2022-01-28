@@ -1,0 +1,46 @@
+{{define "menu"}}
+    <div class="nav-left">
+        <div class="nav-menu-container">
+            <div class="nav-menu box-shadow">
+                <ul class="menu-groups">
+                    <li class="menu-group">
+                        <a class="menu-group-item" href="javascript:void(0);">
+                            <i class="bi-journal-text menu-icon"></i>
+                            <span>权限管理</span>
+                            <i class="bi-chevron-compact-down menu-down"></i>
+                        </a>
+                        <ul class="menu-items">
+                            <li class="menu-item {{if eq .menu "service"}}active{{end}}">
+                                <a href="/admin/service/list">服务管理</a>
+                            </li>
+                            <li class="menu-item {{if eq .menu "user"}}active{{end}}">
+                                <a href="/admin/user/list">用户管理</a>
+                            </li>
+                            <li class="menu-item {{if eq .menu "role"}}active{{end}}">
+                                <a href="/admin/role/list">角色管理</a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="menu-group">
+                        <a class="menu-group-item" href="javascript:void(0);">
+                            <i class="bi-journal-text menu-icon"></i>
+                            <span>权限节点管理</span>
+                            <i class="bi-chevron-compact-down menu-down"></i>
+                        </a>
+                        <ul class="menu-items">
+                            <li class="menu-item {{if eq .menu "api-item"}}active{{end}}">
+                                <a href="/admin/api-item/list">接口节点</a>
+                            </li>
+                            <li class="menu-item {{if eq .menu "data-item"}}active{{end}}">
+                                <a href="/admin/data-item/list">数据节点</a>
+                            </li>
+                            <li class="menu-item {{if eq .menu "menu-item"}}active{{end}}">
+                                <a href="/admin/menu-item/list">菜单节点</a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+{{end}}

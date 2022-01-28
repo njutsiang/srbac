@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+{{template "head" .}}
+</head>
+<body>
+{{template "header" .}}
+<main>
+    {{template "menu" .}}
+    <div class="main-container">
+        <div class="main-header">
+            <div class="main-title">{{.title}}</div>
+            <div class="main-path">
+                <a href="/admin">首页</a>
+                <i class="bi-chevron-right"></i>
+                <a href="/admin/api-item/list">接口节点管理</a>
+                <i class="bi-chevron-right"></i>
+                <span>{{.title}}</span>
+            </div>
+        </div>
+        <div class="main-content box-shadow">
+            <div class="main-top">
+                <div class="main-top-left">
+                    <form class="main-auto-search-form" method="get">
+                        <select name="serviceId" class="form-select" style="width:220px;">
+                            <option value="">-所有-</option>
+                            {{range .serviceIds}}
+                                <option value="{{.Key}}" {{if eq .Key $.serviceId}}selected="selected"{{end}}>{{.Value}}</option>
+                            {{end}}
+                        </select>
+                    </form>
+                </div>
+                <div class="main-top-right">
+                    <a type="button" class="btn btn-primary" href="/admin/api-item/add">添加</a>
+                </div>
+            </div>
+            <div class="table-container">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th scope="col" style="width: 80px; min-width: 80px;">ID</th>
+                            <th scope="col" style="min-width: 100px;">请求方式</th>
+                            <th scope="col" style="min-width: 100px;">接口路由</th>
+                            <th scope="col" style="min-width: 100px;">接口名称</th>
+                            <th scope="col" style="min-width: 100px;">匿名访问</th>
+                            <th scope="col" style="min-width: 100px;">所属服务</th>
+                            <th scope="col" style="width: 220px; min-width: 220px;">创建时间</th>
+                            <th scope="col" style="width: 130px; min-width: 130px;">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{range .apiItems}}
+                        <tr>
+                            <td>{{.Id}}</td>
+                            <td>{{.Method}}</td>
+                            <td>{{.Uri}}</td>
+                            <td>{{.Name}}</td>
+                            <td>{{if eq .IsAnonymousAccess 1}}允许{{else}}不允许{{end}}</td>
+                            <td>{{.GetServiceName}}</td>
+                            <td>{{.GetCreatedAt}}</td>
+                            <td>
+                                <a class="btn btn-sm btn-outline-primary no-border" href="/admin/api-item/edit?id={{.Id}}">编辑</a>
+                                <a class="btn btn-sm btn-outline-danger no-border" href="/admin/api-item/delete?id={{.Id}}">删除</a>
+                            </td>
+                        </tr>
+                        {{end}}
+                    </tbody>
+                </table>
+                <ul class="pagination">
+                    {{.pager}}
+                </ul>
+            </div>
+        </div>
+    </div>
+</main>
+{{template "footer" .}}
+</body>
+</html>
