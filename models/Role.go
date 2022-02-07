@@ -7,6 +7,7 @@ import (
 	"time"
 )
 
+// 角色
 type Role struct {
 	Model
 	Id int64 `label:"ID"`

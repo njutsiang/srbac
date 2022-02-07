@@ -18,6 +18,11 @@ func (this *Exception) GetMessage() string {
 	return this.message
 }
 
+// 实现 error
+func (this *Exception) Error() string {
+	return this.message
+}
+
 // 抛出异常
 func NewException(err_code code.Code, err_msg... string) {
 	msg := ""

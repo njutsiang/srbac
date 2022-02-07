@@ -22,7 +22,7 @@
             <div class="main-top">
                 <div class="main-top-left"></div>
                 <div class="main-top-right">
-                    <a type="button" class="btn btn-primary" href="/admin/role/add">添加</a>
+                    <a type="button" class="btn btn-primary" href="/admin/role-service/edit?roleId={{.role.Id}}">分配服务</a>
                 </div>
             </div>
             <div class="table-container">
@@ -30,23 +30,24 @@
                     <thead>
                         <tr>
                             <th scope="col" style="width: 80px; min-width: 80px;">ID</th>
-                            <th scope="col" style="min-width: 200px;">角色标识</th>
-                            <th scope="col" style="min-width: 200px;">角色名称</th>
+                            <th scope="col" style="min-width: 100px;">服务标识</th>
+                            <th scope="col" style="min-width: 100px;">服务名称</th>
                             <th scope="col" style="width: 220px; min-width: 220px;">创建时间</th>
-                            <th scope="col" style="width: 200px; min-width: 200px;">操作</th>
+                            <th scope="col" style="width: 300px; min-width: 300px;">操作</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {{range .roles}}
+                        {{range .roleServices}}
                         <tr>
                             <td>{{.Id}}</td>
-                            <td>{{.Key}}</td>
-                            <td>{{.Name}}</td>
+                            <td>{{.GetServiceKey}}</td>
+                            <td>{{.GetServiceName}}</td>
                             <td>{{.GetCreatedAt}}</td>
                             <td>
-                                <a class="btn btn-sm btn-outline-primary no-border" href="/admin/role-service/list?roleId={{.Id}}">分配权限</a>
-                                <a class="btn btn-sm btn-outline-primary no-border" href="/admin/role/edit?id={{.Id}}">编辑</a>
-                                <a class="btn btn-sm btn-outline-danger no-border" href="/admin/role/delete?id={{.Id}}">删除</a>
+                                <a class="btn btn-sm btn-outline-primary no-border" href="/admin/role-api-item/edit?roleServiceId={{.Id}}">接口节点</a>
+                                <a class="btn btn-sm btn-outline-primary no-border" href="/admin/role-data-item/edit?roleServiceId={{.Id}}">数据节点</a>
+                                <a class="btn btn-sm btn-outline-primary no-border" href="/admin/role-menu-item/edit?roleServiceId={{.Id}}">菜单节点</a>
+                                <a class="btn btn-sm btn-outline-danger no-border" href="/admin/role-service/delete?roleId={{.RoleId}}&id={{.Id}}">取消</a>
                             </td>
                         </tr>
                         {{end}}

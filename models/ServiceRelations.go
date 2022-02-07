@@ -69,3 +69,12 @@ func MenuItemsLoadServices(menuItems []*MenuItem) {
 	}
 	models.LoadServices()
 }
+
+// 角色服务分配载入所属服务
+func RoleServiceLoadServices(roleServices []*RoleService) {
+	models := ServiceRelations{}
+	for _, roleService := range roleServices {
+		models = append(models, roleService)
+	}
+	models.LoadServices()
+}

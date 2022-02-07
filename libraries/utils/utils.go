@@ -107,6 +107,12 @@ func ToSliceInt64(data interface{}) []int64 {
 		return result
 	case []int64:
 		return data.([]int64)
+	case []string:
+		result := []int64{}
+		for _, v := range data.([]string) {
+			result = append(result, ToInt64(v))
+		}
+		return result
 	}
 	return []int64{}
 }

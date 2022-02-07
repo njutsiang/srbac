@@ -11,6 +11,7 @@ import (
 	"srbac/libraries/utils"
 	"srbac/models"
 	"srbac/srbac"
+	"strings"
 )
 
 // 控制器基类
@@ -28,7 +29,7 @@ func (this *Controller) HtmlStatus(ctx *gin.Context, code int, filename string, 
 	ctx.Status(code)
 	ctx.Header("Content-Type", "text/html; charset=utf-8")
 
-	// 载入模板文件
+	// 所有模板文件
 	filenames := []string{"",
 		"./views/admin/layout/head.gohtml",
 		"./views/admin/layout/header.gohtml",
@@ -38,7 +39,18 @@ func (this *Controller) HtmlStatus(ctx *gin.Context, code int, filename string, 
 	copy(filenames, []string{
 		filename,
 	})
-	tmpl, err := template.ParseFiles(filenames...)
+
+	// 主模板文件
+	filenameItems := strings.Split(filename, "/")
+	filenameItem := filenameItems[len(filenameItems) - 1]
+
+	// 向模板注册自定义函数
+	tmpl := template.New(filenameItem).Funcs(template.FuncMap{
+		"InSlice": utils.InSlice,
+	})
+
+	// 解析所有模板
+	tmpl, err := tmpl.ParseFiles(filenames...)
 	if err != nil {
 		log.Error(err)
 		ctx.Status(http.StatusNotFound)
