@@ -42,7 +42,7 @@ func (this *RoleServiceController) List(c *gin.Context) {
 
 	this.HTML(c, "./views/admin/role-service/list.gohtml", map[string]interface{}{
 		"menu": "role",
-		"title": "角色：" + role.Name,
+		"title": role.Name,
 		"pager": utils.GetPageHtml(count, page, perPage, query, "/admin/role-service/list"),
 		"role": role,
 		"roleServices": roleServices,
@@ -104,13 +104,12 @@ func (this *RoleServiceController) Edit(c *gin.Context) {
 				}
 			}
 		}
-
 		this.Redirect(c, referer)
 	}
 
 	this.HTML(c, "./views/admin/role-service/edit.gohtml", map[string]interface{}{
 		"menu": "role",
-		"title": "角色：" + role.Name,
+		"title": role.Name,
 		"services": services,
 		"serviceIds": serviceIds,
 	})

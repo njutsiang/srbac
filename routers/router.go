@@ -71,4 +71,8 @@ func SetRouters(engine *gin.Engine) {
 	engine.GET("/admin/role-service/edit", (&admin.RoleServiceController{}).Edit)
 	engine.POST("/admin/role-service/edit", (&admin.RoleServiceController{}).Edit)
 	engine.GET("/admin/role-service/delete", (&admin.RoleServiceController{}).Delete)
+
+	// 角色服务接口节点分配
+	engine.GET("/admin/role-api-item/edit", (&admin.RoleApiItemController{}).Edit)
+	engine.POST("/admin/role-api-item/edit", (&admin.RoleApiItemController{}).Edit)
 }
