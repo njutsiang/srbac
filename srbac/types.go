@@ -41,24 +41,3 @@ func (items Sortables) SortBy(values []int64) Sortables {
 	}
 	return data
 }
-
-// 配置文件
-type ConfigYaml struct {
-	Mysql struct{
-		Host string
-		Port string
-		User string
-		Password string
-		Db string
-		Charset string
-	}
-	Redis struct{
-		Host string
-		Port string
-		Password string
-		Db string
-	}
-	Session struct{
-		Key string
-	}
-}
