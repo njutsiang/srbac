@@ -103,4 +103,8 @@ func SetRouters(engine *gin.Engine) {
 	// 用户服务数据节点分配
 	engine.GET("/admin/user-data-item/edit", (&admin.UserDataItemController{}).Edit)
 	engine.POST("/admin/user-data-item/edit", (&admin.UserDataItemController{}).Edit)
+
+	// 用户服务菜单节点分配
+	engine.GET("/admin/user-menu-item/edit", (&admin.UserMenuItemController{}).Edit)
+	engine.POST("/admin/user-menu-item/edit", (&admin.UserMenuItemController{}).Edit)
 }

@@ -11,4 +11,4 @@ redis:
   password:
   db: 0
 session:
-  key: 123456
+  key: 19be30e8a9850e5cb5d1f7e3e47bde35
