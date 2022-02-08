@@ -33,7 +33,7 @@
                             <th scope="col" style="min-width: 200px;">角色标识</th>
                             <th scope="col" style="min-width: 200px;">角色名称</th>
                             <th scope="col" style="width: 220px; min-width: 220px;">创建时间</th>
-                            <th scope="col" style="width: 200px; min-width: 200px;">操作</th>
+                            <th scope="col" style="width: 170px; min-width: 170px;">操作</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -44,7 +44,7 @@
                             <td>{{.Name}}</td>
                             <td>{{.GetCreatedAt}}</td>
                             <td>
-                                <a class="btn btn-sm btn-outline-primary no-border" href="/admin/role-service/list?roleId={{.Id}}">分配权限</a>
+                                <a class="btn btn-sm btn-outline-primary no-border" href="/admin/role-service/list?roleId={{.Id}}">权限</a>
                                 <a class="btn btn-sm btn-outline-primary no-border" href="/admin/role/edit?id={{.Id}}">编辑</a>
                                 <a class="btn btn-sm btn-outline-danger no-border" href="/admin/role/delete?id={{.Id}}">删除</a>
                             </td>

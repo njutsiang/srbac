@@ -83,4 +83,10 @@ func SetRouters(engine *gin.Engine) {
 	// 角色服务菜单节点分配
 	engine.GET("/admin/role-menu-item/edit", (&admin.RoleMenuItemController{}).Edit)
 	engine.POST("/admin/role-menu-item/edit", (&admin.RoleMenuItemController{}).Edit)
+
+	// 用户角色分配
+	engine.GET("/admin/user-role/list", (&admin.UserRoleController{}).List)
+	engine.GET("/admin/user-role/edit", (&admin.UserRoleController{}).Edit)
+	engine.POST("/admin/user-role/edit", (&admin.UserRoleController{}).Edit)
+	engine.GET("/admin/user-role/delete", (&admin.UserRoleController{}).Delete)
 }

@@ -27,7 +27,7 @@ func (this *RoleDataItemController) Edit(c *gin.Context) {
 	re := srbac.Db.First(roleService, roleServiceId)
 	srbac.CheckError(re.Error)
 
-	models.RoleServiceLoadServices([]*models.RoleService{roleService})
+	models.RoleServicesLoadServices([]*models.RoleService{roleService})
 
 	referer := this.GetReferer(c, fmt.Sprintf("/admin/role-service/list?roleId=%d", roleService.RoleId))
 

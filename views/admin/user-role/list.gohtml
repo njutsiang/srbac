@@ -13,41 +13,43 @@
             <div class="main-path">
                 <a href="/admin">首页</a>
                 <i class="bi-chevron-right"></i>
-                <a href="/admin/role/list">角色管理</a>
+                <a href="/admin/user/list">用户管理</a>
                 <i class="bi-chevron-right"></i>
                 <span>{{.title}}</span>
             </div>
         </div>
         <div class="main-content box-shadow">
             <div class="main-top">
-                <div class="main-top-left"></div>
-                <div class="main-top-right">
-                    <a type="button" class="btn btn-primary" href="/admin/role-service/edit?roleId={{.role.Id}}">分配服务</a>
-                </div>
+                <ul class="nav nav-tabs">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#">角色</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">补充权限</a>
+                    </li>
+                </ul>
+                <a type="button" class="btn btn-primary main-top-btn" href="/admin/user-role/edit?userId={{.user.Id}}">分配角色</a>
             </div>
             <div class="table-container">
                 <table class="table table-hover">
                     <thead>
                         <tr>
                             <th scope="col" style="width: 80px; min-width: 80px;">ID</th>
-                            <th scope="col" style="min-width: 100px;">服务标识</th>
-                            <th scope="col" style="min-width: 100px;">服务名称</th>
+                            <th scope="col">角色标识</th>
+                            <th scope="col">角色名称</th>
                             <th scope="col" style="width: 220px; min-width: 220px;">创建时间</th>
-                            <th scope="col" style="width: 300px; min-width: 300px;">操作</th>
+                            <th scope="col" style="width: 80px; min-width: 80px;">操作</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {{range .roleServices}}
+                        {{range .userRoles}}
                         <tr>
                             <td>{{.Id}}</td>
-                            <td>{{.GetServiceKey}}</td>
-                            <td>{{.GetServiceName}}</td>
+                            <td>{{.GetRole.Key}}</td>
+                            <td>{{.GetRole.Name}}</td>
                             <td>{{.GetCreatedAt}}</td>
                             <td>
-                                <a class="btn btn-sm btn-outline-primary no-border" href="/admin/role-api-item/edit?roleServiceId={{.Id}}">接口权限</a>
-                                <a class="btn btn-sm btn-outline-primary no-border" href="/admin/role-data-item/edit?roleServiceId={{.Id}}">数据权限</a>
-                                <a class="btn btn-sm btn-outline-primary no-border" href="/admin/role-menu-item/edit?roleServiceId={{.Id}}">菜单权限</a>
-                                <a class="btn btn-sm btn-outline-danger no-border" href="/admin/role-service/delete?roleId={{.RoleId}}&id={{.Id}}">取消</a>
+                                <a class="btn btn-sm btn-outline-danger no-border" href="/admin/user-role/delete?id={{.Id}}&userId={{.UserId}}">取消</a>
                             </td>
                         </tr>
                         {{end}}

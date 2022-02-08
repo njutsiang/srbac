@@ -38,7 +38,7 @@ func (this *RoleServiceController) List(c *gin.Context) {
 	re = srbac.Db.Where("role_id = ?", roleId).Order("service_id asc").Limit(perPage).Offset((page - 1) * perPage).Find(&roleServices)
 	srbac.CheckError(re.Error)
 
-	models.RoleServiceLoadServices(roleServices)
+	models.RoleServicesLoadServices(roleServices)
 
 	this.HTML(c, "./views/admin/role-service/list.gohtml", map[string]interface{}{
 		"menu": "role",

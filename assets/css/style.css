@@ -199,6 +199,13 @@ main {
 .main-top {
     margin: 0 0 20px 0;
 }
+.main-top .nav-tabs {
+    flex-grow: 1;
+    margin-right: 20px;
+}
+.main-top-btn {
+    height: 38px;
+}
 .user-info {
     height: 64px;
     float: right;
@@ -254,4 +261,7 @@ main {
 .form-switch .form-check-input {
     position: relative;
     top: 1px;
+}
+.nav-link {
+    padding: 6px 1rem;
 }
