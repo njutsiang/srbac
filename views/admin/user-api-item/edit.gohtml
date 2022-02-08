@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+{{template "head" .}}
+</head>
+<body>
+{{template "header" .}}
+<main>
+    {{template "menu" .}}
+    <div class="main-container">
+        <div class="main-header">
+            <div class="main-title">{{.title}}</div>
+            <div class="main-path">
+                <a href="/admin">首页</a>
+                <i class="bi-chevron-right"></i>
+                <a href="/admin/user/list">用户管理</a>
+                <i class="bi-chevron-right"></i>
+                <span>{{.title}}</span>
+            </div>
+        </div>
+        <div class="main-content box-shadow">
+            <div class="main-top">
+                <ul class="nav nav-tabs">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin/user-role/list?userId={{.user.Id}}">角色</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/admin/user-service/list?userId={{.user.Id}}">补充权限</a>
+                    </li>
+                </ul>
+            </div>
+            <form method="post" action="{{.uri}}">
+                <table class="form-table">
+                    <tr>
+                        <td class="td1">
+                        </td>
+                        <td>
+                            {{range .apiItems}}
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="api_item_id_{{.Id}}" name="api_item_id[]" value="{{.Id}}" {{if InSlice .Id $.apiItemIds}}checked="checked"{{end}}>
+                                    <label class="form-check-label" for="api_item_id_{{.Id}}">{{.Method}} {{.Uri}} {{.Name}}</label>
+                                </div>
+                            {{end}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="td1"></td>
+                        <td><button type="submit" class="btn btn-primary">保存</button></td>
+                    </tr>
+                </table>
+            </form>
+        </div>
+    </div>
+</main>
+{{template "footer" .}}
+</body>
+</html>

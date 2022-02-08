@@ -38,7 +38,7 @@
                             <th scope="col">服务标识</th>
                             <th scope="col">服务名称</th>
                             <th scope="col" style="width: 220px; min-width: 220px;">创建时间</th>
-                            <th scope="col" style="width: 80px; min-width: 80px;">操作</th>
+                            <th scope="col" style="width: 300px; min-width: 300px;">操作</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -49,6 +49,9 @@
                             <td>{{.GetService.Name}}</td>
                             <td>{{.GetCreatedAt}}</td>
                             <td>
+                                <a class="btn btn-sm btn-outline-primary no-border" href="/admin/user-api-item/edit?userServiceId={{.Id}}">接口权限</a>
+                                <a class="btn btn-sm btn-outline-primary no-border" href="/admin/user-data-item/edit?userServiceId={{.Id}}">数据权限</a>
+                                <a class="btn btn-sm btn-outline-primary no-border" href="/admin/user-menu-item/edit?userServiceId={{.Id}}">菜单权限</a>
                                 <a class="btn btn-sm btn-outline-danger no-border {{if InSlice .ServiceId $.roleServiceIds}}disabled{{end}}" href="/admin/user-service/delete?id={{.Id}}&userId={{.UserId}}">取消</a>
                             </td>
                         </tr>

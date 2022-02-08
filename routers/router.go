@@ -95,4 +95,8 @@ func SetRouters(engine *gin.Engine) {
 	engine.GET("/admin/user-service/edit", (&admin.UserServiceController{}).Edit)
 	engine.POST("/admin/user-service/edit", (&admin.UserServiceController{}).Edit)
 	engine.GET("/admin/user-service/delete", (&admin.UserServiceController{}).Delete)
+
+	// 用户服务接口节点分配
+	engine.GET("/admin/user-api-item/edit", (&admin.UserApiItemController{}).Edit)
+	engine.POST("/admin/user-api-item/edit", (&admin.UserApiItemController{}).Edit)
 }
