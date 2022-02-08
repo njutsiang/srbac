@@ -22,34 +22,34 @@
             <div class="main-top">
                 <ul class="nav nav-tabs">
                     <li class="nav-item">
-                        <a class="nav-link active" href="/admin/user-role/list?userId={{.user.Id}}">角色</a>
+                        <a class="nav-link" href="/admin/user-role/list?userId={{.user.Id}}">角色</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/admin/user-service/list?userId={{.user.Id}}">补充权限</a>
+                        <a class="nav-link active" href="/admin/user-service/list?userId={{.user.Id}}">补充权限</a>
                     </li>
                 </ul>
-                <a type="button" class="btn btn-primary main-top-btn" href="/admin/user-role/edit?userId={{.user.Id}}">分配角色</a>
+                <a type="button" class="btn btn-primary main-top-btn" href="/admin/user-service/edit?userId={{.user.Id}}">分配服务</a>
             </div>
             <div class="table-container">
                 <table class="table table-hover">
                     <thead>
                         <tr>
                             <th scope="col" style="width: 80px; min-width: 80px;">ID</th>
-                            <th scope="col">角色标识</th>
-                            <th scope="col">角色名称</th>
+                            <th scope="col">服务标识</th>
+                            <th scope="col">服务名称</th>
                             <th scope="col" style="width: 220px; min-width: 220px;">创建时间</th>
                             <th scope="col" style="width: 80px; min-width: 80px;">操作</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {{range .userRoles}}
+                        {{range .userServices}}
                         <tr>
                             <td>{{.Id}}</td>
-                            <td>{{.GetRole.Key}}</td>
-                            <td>{{.GetRole.Name}}</td>
+                            <td>{{.GetService.Key}}</td>
+                            <td>{{.GetService.Name}}</td>
                             <td>{{.GetCreatedAt}}</td>
                             <td>
-                                <a class="btn btn-sm btn-outline-danger no-border" href="/admin/user-role/delete?id={{.Id}}&userId={{.UserId}}">取消</a>
+                                <a class="btn btn-sm btn-outline-danger no-border {{if InSlice .ServiceId $.roleServiceIds}}disabled{{end}}" href="/admin/user-service/delete?id={{.Id}}&userId={{.UserId}}">取消</a>
                             </td>
                         </tr>
                         {{end}}

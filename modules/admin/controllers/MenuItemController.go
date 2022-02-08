@@ -29,7 +29,7 @@ func (this *MenuItemController) List(c *gin.Context) {
 	srbac.CheckError(re.Error)
 
 	menuItems := []*models.MenuItem{}
-	find.Order("id asc").Offset((page - 1) * per_page).Limit(per_page).Find(&menuItems)
+	re = find.Order("id asc").Offset((page - 1) * per_page).Limit(per_page).Find(&menuItems)
 	srbac.CheckError(re.Error)
 
 	models.MenuItemsLoadServices(menuItems)

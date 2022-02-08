@@ -78,3 +78,12 @@ func RoleServicesLoadServices(roleServices []*RoleService) {
 	}
 	models.LoadServices()
 }
+
+// 用户服务关系载入服务
+func UserServicesLoadServices(userRoles []*UserService) {
+	models := ServiceRelations{}
+	for _, userRole := range userRoles {
+		models = append(models, userRole)
+	}
+	models.LoadServices()
+}

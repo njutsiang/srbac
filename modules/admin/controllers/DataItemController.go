@@ -29,7 +29,7 @@ func (this *DataItemController) List(c *gin.Context) {
 	srbac.CheckError(re.Error)
 
 	dataItems := []*models.DataItem{}
-	find.Order("id asc").Offset((page - 1) * per_page).Limit(per_page).Find(&dataItems)
+	re = find.Order("id asc").Offset((page - 1) * per_page).Limit(per_page).Find(&dataItems)
 	srbac.CheckError(re.Error)
 
 	models.DataItemsLoadServices(dataItems)

@@ -89,4 +89,10 @@ func SetRouters(engine *gin.Engine) {
 	engine.GET("/admin/user-role/edit", (&admin.UserRoleController{}).Edit)
 	engine.POST("/admin/user-role/edit", (&admin.UserRoleController{}).Edit)
 	engine.GET("/admin/user-role/delete", (&admin.UserRoleController{}).Delete)
+
+	// 用户服务分配
+	engine.GET("/admin/user-service/list", (&admin.UserServiceController{}).List)
+	engine.GET("/admin/user-service/edit", (&admin.UserServiceController{}).Edit)
+	engine.POST("/admin/user-service/edit", (&admin.UserServiceController{}).Edit)
+	engine.GET("/admin/user-service/delete", (&admin.UserServiceController{}).Delete)
 }

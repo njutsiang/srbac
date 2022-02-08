@@ -23,17 +23,19 @@ func (this *UserRoleController) List(c *gin.Context) {
 		exception.NewException(code.ParamsError)
 	}
 
-	query := c.Request.URL.Query()
-	page, perPage := utils.GetPageInfo(query)
+	params := c.Request.URL.Query()
+	page, perPage := utils.GetPageInfo(params)
 
 	user := &models.User{}
 	re := srbac.Db.First(user, userId)
 	srbac.CheckError(re.Error)
 
 	count := int64(0)
+	query := srbac.Db.Model(&models.UserRole{}).Where("user_id = ?", userId).Count(&count)
+	srbac.CheckError(query.Error)
 
 	userRoles := []*models.UserRole{}
-	re = srbac.Db.Where("user_id = ?", userId).Limit(1000).Find(&userRoles)
+	re = query.Order("id asc").Offset((page - 1) * perPage).Limit(perPage).Find(&userRoles)
 	srbac.CheckError(re.Error)
 
 	models.UserRolesLoadRoles(userRoles)
@@ -41,7 +43,7 @@ func (this *UserRoleController) List(c *gin.Context) {
 	this.HTML(c, "./views/admin/user-role/list.gohtml", map[string]interface{}{
 		"menu": "user",
 		"title": user.Name,
-		"pager": utils.GetPageHtml(count, page, perPage, query, "/admin/user-role/list"),
+		"pager": utils.GetPageHtml(count, page, perPage, params, "/admin/user-role/list"),
 		"user": user,
 		"userRoles": userRoles,
 	})
@@ -105,8 +107,9 @@ func (this *UserRoleController) Edit(c *gin.Context) {
 	}
 
 	this.HTML(c, "./views/admin/user-role/edit.gohtml", map[string]interface{}{
-		"menu": "role",
+		"menu": "user",
 		"title": user.Name,
+		"user": user,
 		"roles": roles,
 		"roleIds": roleIds,
 	})

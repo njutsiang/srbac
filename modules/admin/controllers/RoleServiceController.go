@@ -18,8 +18,8 @@ type RoleServiceController struct {
 
 // 角色服务关系列表
 func (this *RoleServiceController) List(c *gin.Context) {
-	query := c.Request.URL.Query()
-	page, perPage := utils.GetPageInfo(query)
+	params := c.Request.URL.Query()
+	page, perPage := utils.GetPageInfo(params)
 
 	roleId := utils.ToInt(c.Query("roleId"))
 	if roleId <= 0 {
@@ -31,11 +31,11 @@ func (this *RoleServiceController) List(c *gin.Context) {
 	srbac.CheckError(re.Error)
 
 	count := int64(0)
-	re = srbac.Db.Model(&models.RoleService{}).Count(&count)
-	srbac.CheckError(re.Error)
+	query := srbac.Db.Model(&models.RoleService{}).Where("role_id = ?", roleId).Count(&count)
+	srbac.CheckError(query.Error)
 
 	roleServices := []*models.RoleService{}
-	re = srbac.Db.Where("role_id = ?", roleId).Order("service_id asc").Limit(perPage).Offset((page - 1) * perPage).Find(&roleServices)
+	re = query.Order("service_id asc").Limit(perPage).Offset((page - 1) * perPage).Find(&roleServices)
 	srbac.CheckError(re.Error)
 
 	models.RoleServicesLoadServices(roleServices)
@@ -43,7 +43,7 @@ func (this *RoleServiceController) List(c *gin.Context) {
 	this.HTML(c, "./views/admin/role-service/list.gohtml", map[string]interface{}{
 		"menu": "role",
 		"title": role.Name,
-		"pager": utils.GetPageHtml(count, page, perPage, query, "/admin/role-service/list"),
+		"pager": utils.GetPageHtml(count, page, perPage, params, "/admin/role-service/list"),
 		"role": role,
 		"roleServices": roleServices,
 	})
