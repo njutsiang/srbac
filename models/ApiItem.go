@@ -11,6 +11,10 @@ import (
 type ApiItem struct {
 	Model
 	service *Service
+	old struct {
+		Method string
+		Uri string
+	}
 	Id int64 `label:"ID"`
 	ServiceId int64 `label:"所属服务" validate:"required"`
 	Method string `label:"请求方式" validate:"required"`
@@ -58,6 +62,8 @@ func (this *ApiItem) SetAttributes(data map[string]interface{}) {
 	delete(data, "id")
 	delete(data, "updated_at")
 	delete(data, "created_at")
+	this.old.Method = this.Method
+	this.old.Uri = this.Uri
 	this.SetRefValue()
 	this.setAttributes(data)
 }
@@ -96,4 +102,12 @@ func (this *ApiItem) GetServiceId() int64 {
 
 func (this *ApiItem) SetService(service *Service) {
 	this.service = service
+}
+
+func (this *ApiItem) GetService() *Service {
+	return this.service
+}
+
+func (this *ApiItem) GetOld() struct{Method string; Uri string} {
+	return this.old
 }

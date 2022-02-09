@@ -2,6 +2,7 @@ package admin
 
 import (
 	"github.com/gin-gonic/gin"
+	"srbac/cache"
 	"srbac/controllers"
 	"srbac/libraries/utils"
 	"srbac/models"
@@ -54,6 +55,7 @@ func (this *ApiItemController) Add(c *gin.Context) {
 		params := this.GetPostForm(c)
 		apiItem = models.NewApiItem(params)
 		if apiItem.Validate() && apiItem.Create() {
+			cache.SetApiItem(apiItem)
 			this.Redirect(c, referer)
 		} else {
 			this.SetFailed(c, apiItem.GetError())
@@ -90,6 +92,7 @@ func (this *ApiItemController) Edit(c *gin.Context) {
 		apiItem.SetAttributes(params)
 		apiItem.UpdatedAt = time.Now().Unix()
 		if apiItem.Validate() && apiItem.Update() {
+			cache.SetApiItem(apiItem)
 			this.Redirect(c, referer)
 		} else {
 			this.SetFailed(c, apiItem.GetError())
@@ -115,7 +118,12 @@ func (this *ApiItemController) Delete(c *gin.Context) {
 	if id <= 0 {
 		this.Redirect(c, referer)
 	}
-	re :=srbac.Db.Delete(&models.ApiItem{}, id)
+
+	apiItem := &models.ApiItem{}
+	re := srbac.Db.First(apiItem, id)
 	srbac.CheckError(re.Error)
+
+	srbac.Db.Delete(apiItem)
+	cache.DelApiItem(apiItem)
 	this.Redirect(c, referer)
 }
