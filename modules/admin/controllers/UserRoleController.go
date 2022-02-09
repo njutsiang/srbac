@@ -3,6 +3,7 @@ package admin
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"srbac/cache"
 	"srbac/code"
 	"srbac/controllers"
 	"srbac/exception"
@@ -51,7 +52,7 @@ func (this *UserRoleController) List(c *gin.Context) {
 
 // 编辑用户角色关系
 func (this *UserRoleController) Edit(c *gin.Context) {
-	userId := utils.ToInt(c.Query("userId"))
+	userId := utils.ToInt64(c.Query("userId"))
 	if userId <= 0 {
 		exception.NewException(code.ParamsError)
 	}
@@ -77,18 +78,18 @@ func (this *UserRoleController) Edit(c *gin.Context) {
 	if c.Request.Method == "POST" {
 		err := c.Request.ParseForm()
 		srbac.CheckError(err)
-		NewRoleIds := utils.ToSliceInt64(c.Request.PostForm["role_id[]"])
+		newRoleIds := utils.ToSliceInt64(c.Request.PostForm["role_id[]"])
 
 		// 删除
 		for _, userRole := range userRoles {
-			if !utils.InSlice(userRole.RoleId, NewRoleIds) {
+			if !utils.InSlice(userRole.RoleId, newRoleIds) {
 				srbac.Db.Delete(userRole)
 			}
 		}
 
 		// 新增
 		hasErr := false
-		for _, roleId := range NewRoleIds {
+		for _, roleId := range newRoleIds {
 			if !utils.InSlice(roleId, roleIds) {
 				userRole := models.NewUserRole(map[string]interface{}{
 					"user_id": userId,
@@ -101,6 +102,7 @@ func (this *UserRoleController) Edit(c *gin.Context) {
 				}
 			}
 		}
+		cache.SetUserRoleIds(userId, newRoleIds)
 		if !hasErr {
 			this.Redirect(c, referer)
 		}
@@ -117,13 +119,13 @@ func (this *UserRoleController) Edit(c *gin.Context) {
 
 // 删除用户角色关系
 func (this *UserRoleController) Delete(c *gin.Context) {
-	id := utils.ToInt(c.Query("id"))
-	userId := utils.ToInt(c.Query("userId"))
+	id := utils.ToInt64(c.Query("id"))
+	userId := utils.ToInt64(c.Query("userId"))
 	if id <= 0 || userId <= 0 {
 		exception.NewException(code.ParamsError)
 	}
 	referer := this.GetReferer(c, fmt.Sprintf("/admin/user-role/list?userId=%d", userId))
-	re := srbac.Db.Delete(&models.UserRole{}, id)
-	srbac.CheckError(re.Error)
+	srbac.Db.Delete(&models.UserRole{}, id)
+	cache.SetUserRoles(userId)
 	this.Redirect(c, referer)
 }

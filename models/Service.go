@@ -10,6 +10,9 @@ import (
 // 服务
 type Service struct {
 	Model
+	old struct {
+		Key string
+	}
 	Id int64 `label:"ID"`
 	Key string `label:"服务标识" validate:"required"`
 	Name string `label:"服务名称"`
@@ -59,6 +62,7 @@ func (this *Service) SetAttributes(data map[string]interface{}) {
 	delete(data, "id")
 	delete(data, "updated_at")
 	delete(data, "created_at")
+	this.old.Key = this.Key
 	this.SetRefValue()
 	this.setAttributes(data)
 }
@@ -82,4 +86,8 @@ func (this *Service) ErrorMessages() map[string]string {
 // 格式化创建时间
 func (this *Service) GetCreatedAt() string {
 	return time.Unix(this.CreatedAt, 0).Format(srbac.TimeYmdhis)
+}
+
+func (this *Service) GetOld() struct{Key string} {
+	return this.old
 }

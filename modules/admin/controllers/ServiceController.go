@@ -3,6 +3,7 @@ package admin
 import (
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"srbac/cache"
 	"srbac/controllers"
 	"srbac/libraries/utils"
 	"srbac/models"
@@ -72,8 +73,8 @@ func (this *ServiceController) Edit(c *gin.Context) {
 		params := this.GetPostForm(c)
 		service.SetAttributes(params)
 		service.UpdatedAt = time.Now().Unix()
-
 		if service.Validate() && service.Update() {
+			cache.SetService(service)
 			this.Redirect(c, referer)
 		} else {
 			this.SetFailed(c, service.GetError())
@@ -90,14 +91,16 @@ func (this *ServiceController) Edit(c *gin.Context) {
 // 删除服务
 func (this *ServiceController) Delete(c *gin.Context) {
 	referer := this.GetReferer(c, "/admin/course/list", false)
-
 	id := utils.ToInt(c.Query("id"))
 	if id <= 0 {
 		this.Redirect(c, referer)
 	}
 
-	re := srbac.Db.Delete(&models.Service{}, id)
+	service := &models.Service{}
+	re := srbac.Db.First(service, id)
 	srbac.CheckError(re.Error)
 
+	srbac.Db.Delete(service)
+	cache.DelService(service)
 	this.Redirect(c, referer)
 }
