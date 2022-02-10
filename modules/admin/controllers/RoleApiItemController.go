@@ -3,6 +3,7 @@ package admin
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"srbac/cache"
 	"srbac/code"
 	"srbac/controllers"
 	"srbac/exception"
@@ -53,17 +54,18 @@ func (this *RoleApiItemController) Edit(c *gin.Context) {
 	if c.Request.Method == "POST" {
 		err := c.Request.ParseForm()
 		srbac.CheckError(err)
-		NewApiItemIds := utils.ToSliceInt64(c.Request.PostForm["api_item_id[]"])
+		newApiItemIds := utils.ToSliceInt64(c.Request.PostForm["api_item_id[]"])
 
 		// 删除
 		for _, roleApiItem := range roleApiItems {
-			if !utils.InSlice(roleApiItem.ApiItemId, NewApiItemIds) {
+			if !utils.InSlice(roleApiItem.ApiItemId, newApiItemIds) {
 				srbac.Db.Delete(roleApiItem)
 			}
 		}
 
 		// 新增
-		for _, apiItemId := range NewApiItemIds {
+		hasErr := false
+		for _, apiItemId := range newApiItemIds {
 			if !utils.InSlice(apiItemId, apiItemIds) {
 				roleApiItem := models.NewRoleApiItem(map[string]interface{}{
 					"role_id": roleService.RoleId,
@@ -71,12 +73,16 @@ func (this *RoleApiItemController) Edit(c *gin.Context) {
 					"api_item_id": apiItemId,
 				})
 				if !(roleApiItem.Validate() && roleApiItem.Create()) {
+					hasErr = true
 					this.SetFailed(c, roleApiItem.GetError())
 					break
 				}
 			}
 		}
-		this.Redirect(c, referer)
+		cache.SetRoleApiItemIds(roleService.RoleId, roleService.GetServiceId(), newApiItemIds)
+		if !hasErr {
+			this.Redirect(c, referer)
+		}
 	}
 
 	this.HTML(c, "./views/admin/role-api-item/edit.gohtml", map[string]interface{}{

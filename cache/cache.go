@@ -20,9 +20,9 @@ func SetApiItem(apiItem *models.ApiItem) {
 	}
 	old := apiItem.GetOld()
 	if old.Method != "" && old.Uri != "" && (old.Method != apiItem.Method || old.Uri != apiItem.Uri) {
-		delApiItem(apiItem.GetService().Key, old.Method, old.Uri)
+		delApiItem(apiItem.GetService().Id, old.Method, old.Uri)
 	}
-	key := fmt.Sprintf("auth:service:%s:apis", apiItem.GetService().Key)
+	key := fmt.Sprintf("auth:service:%d:apis", apiItem.GetService().Id)
 	field := fmt.Sprintf("%s%s", apiItem.Method, apiItem.Uri)
 	value := "1"
 	if apiItem.IsAnonymousAccess == 1 {
@@ -40,51 +40,20 @@ func DelApiItem(apiItem *models.ApiItem) {
 			return
 		}
 	}
-	delApiItem(apiItem.GetService().Key, apiItem.Method, apiItem.Uri)
+	delApiItem(apiItem.GetService().Id, apiItem.Method, apiItem.Uri)
 }
 
 // 将接口节点从缓存中删除
-func delApiItem(service string, method string, uri string) {
-	key := fmt.Sprintf("auth:service:%s:apis", service)
+func delApiItem(serviceId int64, method string, uri string) {
+	key := fmt.Sprintf("auth:service:%d:apis", serviceId)
 	field := fmt.Sprintf("%s%s", method, uri)
 	_, err := srbac.Rdb.HDel(ctx, key, field).Result()
 	srbac.CheckError(err)
 }
 
-// 将服务下的所有接口节点保存到缓存
-func SetService(service *models.Service) {
-	old := service.GetOld()
-	if old.Key != "" && old.Key != service.Key {
-		delService(old.Key)
-
-		apiItems := []*models.ApiItem{}
-		re := srbac.Db.Where("service_id = ?", service.Id).Limit(1000).Find(&apiItems)
-		srbac.CheckError(re.Error)
-
-		key := fmt.Sprintf("auth:service:%s:apis", service.Key)
-		values := map[string]string{}
-		for _, apiItem := range apiItems {
-			field := fmt.Sprintf("%s%s", apiItem.Method, apiItem.Uri)
-			value := "1"
-			if apiItem.IsAnonymousAccess == 1 {
-				value = "0"
-			}
-			values[field] = value
-		}
-
-		_, err := srbac.Rdb.HMSet(ctx, key, values).Result()
-		srbac.CheckError(err)
-	}
-}
-
 // 将服务下的所有接口节点从缓存中删除
-func DelService(service *models.Service) {
-	delService(service.Key)
-}
-
-// 将服务下的所有接口节点从缓存中删除
-func delService(service string) {
-	key := fmt.Sprintf("auth:service:%s:apis", service)
+func DelService(serviceId int64) {
+	key := fmt.Sprintf("auth:service:%d:apis", serviceId)
 	_, err := srbac.Rdb.Del(ctx, key).Result()
 	srbac.CheckError(err)
 }
@@ -116,5 +85,106 @@ func setUserRoleIds(userId int64, values []string) {
 	_, err := srbac.Rdb.Del(ctx, key).Result()
 	srbac.CheckError(err)
 	_, err = srbac.Rdb.SAdd(ctx, key, values).Result()
+	srbac.CheckError(err)
+}
+
+// 将用户与角色的关系从缓存中删除
+func DelUserRoles(userId int64) {
+	key := fmt.Sprintf("auth:user:%d:roles", userId)
+	_, err := srbac.Rdb.Del(ctx, key).Result()
+	srbac.CheckError(err)
+}
+
+// 将角色拥有的接口节点保存到缓存
+func SetRoleApiItemIds(roleId int64, serviceId int64, apiItemIds []int64) {
+	if serviceId == 0 {
+		return
+	}
+	key := fmt.Sprintf("auth:role:%d:service:%d:apis", roleId, serviceId)
+	_, err := srbac.Rdb.Del(ctx, key).Result()
+	srbac.CheckError(err)
+	if len(apiItemIds) >= 1 {
+		apiItems := []*models.ApiItem{}
+		re := srbac.Db.Where("id IN ?", apiItemIds).Where("service_id = ?", serviceId).Find(&apiItems)
+		srbac.CheckError(re.Error)
+		values := []string{}
+		for _, apiItem := range apiItems {
+			values = append(values, fmt.Sprintf("%s%s", apiItem.Method, apiItem.Uri))
+		}
+		_, err = srbac.Rdb.SAdd(ctx, key, values).Result()
+		srbac.CheckError(err)
+	}
+}
+
+// 将角色和接口节点的关系从缓存中删除
+func DelRoleApiItems(roleId int64) {
+	roleServices := []*models.RoleService{}
+	re := srbac.Db.Where("role_id = ?", roleId).Find(&roleServices)
+	srbac.CheckError(re.Error)
+	keys := []string{}
+	for _, roleService := range roleServices {
+		keys = append(keys, fmt.Sprintf("auth:role:%d:service:%d:apis", roleId, roleService.ServiceId))
+	}
+	_, err := srbac.Rdb.Del(ctx, keys...).Result()
+	srbac.CheckError(err)
+}
+
+// 将角色和接口节点的关系从缓存中删除
+func DelRoleApiItemsByServiceId(serviceId int64) {
+	roleServices := []*models.RoleService{}
+	re := srbac.Db.Where("service_id = ?", serviceId).Find(&roleServices)
+	srbac.CheckError(re.Error)
+	keys := []string{}
+	for _, roleService := range roleServices {
+		keys = append(keys, fmt.Sprintf("auth:role:%d:service:%d:apis", roleService.RoleId, serviceId))
+	}
+	_, err := srbac.Rdb.Del(ctx, keys...).Result()
+	srbac.CheckError(err)
+}
+
+// 将角色拥有的数据节点保存到缓存
+func SetRoleDataItemIds(roleId int64, serviceId int64, dataItemIds []int64) {
+	if serviceId == 0 {
+		return
+	}
+	key := fmt.Sprintf("auth:role:%d:service:%d:items", roleId, serviceId)
+	_, err := srbac.Rdb.Del(ctx, key).Result()
+	srbac.CheckError(err)
+	if len(dataItemIds) >= 1 {
+		dataItems := []*models.DataItem{}
+		re := srbac.Db.Where("id IN ?", dataItemIds).Where("service_id = ?", serviceId).Find(&dataItems)
+		srbac.CheckError(re.Error)
+		values := []string{}
+		for _, dataItem := range dataItems {
+			values = append(values, dataItem.Key)
+		}
+		_, err = srbac.Rdb.SAdd(ctx, key, values).Result()
+		srbac.CheckError(err)
+	}
+}
+
+// 将角色和数据节点的关系从缓存中删除
+func DelRoleDataItems(roleId int64) {
+	roleServices := []*models.RoleService{}
+	re := srbac.Db.Where("role_id = ?", roleId).Find(&roleServices)
+	srbac.CheckError(re.Error)
+	keys := []string{}
+	for _, roleService := range roleServices {
+		keys = append(keys, fmt.Sprintf("auth:role:%d:service:%d:items", roleId, roleService.ServiceId))
+	}
+	_, err := srbac.Rdb.Del(ctx, keys...).Result()
+	srbac.CheckError(err)
+}
+
+// 将角色和数据节点的关系从缓存中删除
+func DelRoleDataItemsByServiceId(serviceId int64) {
+	roleServices := []*models.RoleService{}
+	re := srbac.Db.Where("service_id = ?", serviceId).Find(&roleServices)
+	srbac.CheckError(re.Error)
+	keys := []string{}
+	for _, roleService := range roleServices {
+		keys = append(keys, fmt.Sprintf("auth:role:%d:service:%d:items", roleService.RoleId, serviceId))
+	}
+	_, err := srbac.Rdb.Del(ctx, keys...).Result()
 	srbac.CheckError(err)
 }

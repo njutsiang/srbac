@@ -74,7 +74,6 @@ func (this *ServiceController) Edit(c *gin.Context) {
 		service.SetAttributes(params)
 		service.UpdatedAt = time.Now().Unix()
 		if service.Validate() && service.Update() {
-			cache.SetService(service)
 			this.Redirect(c, referer)
 		} else {
 			this.SetFailed(c, service.GetError())
@@ -91,16 +90,14 @@ func (this *ServiceController) Edit(c *gin.Context) {
 // 删除服务
 func (this *ServiceController) Delete(c *gin.Context) {
 	referer := this.GetReferer(c, "/admin/course/list", false)
-	id := utils.ToInt(c.Query("id"))
+	id := utils.ToInt64(c.Query("id"))
 	if id <= 0 {
 		this.Redirect(c, referer)
 	}
-
-	service := &models.Service{}
-	re := srbac.Db.First(service, id)
+	re := srbac.Db.Delete(&models.Service{}, id)
 	srbac.CheckError(re.Error)
-
-	srbac.Db.Delete(service)
-	cache.DelService(service)
+	cache.DelService(id)
+	cache.DelRoleApiItemsByServiceId(id)
+	cache.DelRoleDataItemsByServiceId(id)
 	this.Redirect(c, referer)
 }
