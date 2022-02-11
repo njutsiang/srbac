@@ -3,6 +3,7 @@ package admin
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"srbac/cache"
 	"srbac/code"
 	"srbac/controllers"
 	"srbac/exception"
@@ -53,17 +54,18 @@ func (this *RoleMenuItemController) Edit(c *gin.Context) {
 	if c.Request.Method == "POST" {
 		err := c.Request.ParseForm()
 		srbac.CheckError(err)
-		NewMenuItemIds := utils.ToSliceInt64(c.Request.PostForm["menu_item_id[]"])
+		newMenuItemIds := utils.ToSliceInt64(c.Request.PostForm["menu_item_id[]"])
 
 		// 删除
 		for _, roleMenuItem := range roleMenuItems {
-			if !utils.InSlice(roleMenuItem.MenuItemId, NewMenuItemIds) {
+			if !utils.InSlice(roleMenuItem.MenuItemId, newMenuItemIds) {
 				srbac.Db.Delete(roleMenuItem)
 			}
 		}
 
 		// 新增
-		for _, menuItemId := range NewMenuItemIds {
+		hasErr := false
+		for _, menuItemId := range newMenuItemIds {
 			if !utils.InSlice(menuItemId, menuItemIds) {
 				roleMenuItem := models.NewRoleMenuItem(map[string]interface{}{
 					"role_id": roleService.RoleId,
@@ -71,12 +73,16 @@ func (this *RoleMenuItemController) Edit(c *gin.Context) {
 					"menu_item_id": menuItemId,
 				})
 				if !(roleMenuItem.Validate() && roleMenuItem.Create()) {
+					hasErr = true
 					this.SetFailed(c, roleMenuItem.GetError())
 					break
 				}
 			}
 		}
-		this.Redirect(c, referer)
+		cache.SetRoleMenuItemIds(roleService.RoleId, roleService.ServiceId, newMenuItemIds)
+		if !hasErr {
+			this.Redirect(c, referer)
+		}
 	}
 
 	this.HTML(c, "./views/admin/role-menu-item/edit.gohtml", map[string]interface{}{

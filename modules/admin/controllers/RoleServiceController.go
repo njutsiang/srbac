@@ -3,6 +3,7 @@ package admin
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"srbac/cache"
 	"srbac/code"
 	"srbac/controllers"
 	"srbac/exception"
@@ -117,15 +118,22 @@ func (this *RoleServiceController) Edit(c *gin.Context) {
 
 // 删除角色服务关系
 func (this *RoleServiceController) Delete(c *gin.Context) {
-	id := utils.ToInt(c.Query("id"))
-	roleId := utils.ToInt(c.Query("roleId"))
+	id := utils.ToInt64(c.Query("id"))
+	roleId := utils.ToInt64(c.Query("roleId"))
 	if id <= 0 || roleId <= 0 {
 		exception.NewException(code.ParamsError)
 	}
 	referer := this.GetReferer(c, fmt.Sprintf("/admin/role-service/list?roleId=%d", roleId))
 
-	re := srbac.Db.Delete(&models.RoleService{}, id)
+	roleService := &models.RoleService{}
+	re := srbac.Db.First(roleService, id)
 	srbac.CheckError(re.Error)
 
+	re = srbac.Db.Delete(roleService)
+	srbac.CheckError(re.Error)
+
+	cache.DelRoleApiItemsByRoleService(roleService)
+	cache.DelRoleDataItemsByRoleService(roleService)
+	cache.DelRoleMenuItemsByRoleService(roleService)
 	this.Redirect(c, referer)
 }

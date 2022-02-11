@@ -94,10 +94,10 @@ func (this *RoleController) Delete(c *gin.Context) {
 	if id <= 0 {
 		this.Redirect(c, referer)
 	}
-
 	re := srbac.Db.Delete(&models.Role{}, id)
 	srbac.CheckError(re.Error)
 	cache.DelRoleApiItems(id)
 	cache.DelRoleDataItems(id)
+	cache.DelRoleMenuItems(id)
 	this.Redirect(c, referer)
 }

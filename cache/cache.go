@@ -142,6 +142,13 @@ func DelRoleApiItemsByServiceId(serviceId int64) {
 	srbac.CheckError(err)
 }
 
+// 将角色和接口节点的关系从缓存中删除
+func DelRoleApiItemsByRoleService(roleService *models.RoleService) {
+	key := fmt.Sprintf("auth:role:%d:service:%d:apis", roleService.RoleId, roleService.ServiceId)
+	_, err := srbac.Rdb.Del(ctx, key).Result()
+	srbac.CheckError(err)
+}
+
 // 将角色拥有的数据节点保存到缓存
 func SetRoleDataItemIds(roleId int64, serviceId int64, dataItemIds []int64) {
 	if serviceId == 0 {
@@ -186,5 +193,66 @@ func DelRoleDataItemsByServiceId(serviceId int64) {
 		keys = append(keys, fmt.Sprintf("auth:role:%d:service:%d:items", roleService.RoleId, serviceId))
 	}
 	_, err := srbac.Rdb.Del(ctx, keys...).Result()
+	srbac.CheckError(err)
+}
+
+// 将角色和数据节点的关系从缓存中删除
+func DelRoleDataItemsByRoleService(roleService *models.RoleService) {
+	key := fmt.Sprintf("auth:role:%d:service:%d:items", roleService.RoleId, roleService.ServiceId)
+	_, err := srbac.Rdb.Del(ctx, key).Result()
+	srbac.CheckError(err)
+}
+
+// 将角色拥有的菜单节点保存到缓存
+func SetRoleMenuItemIds(roleId int64, serviceId int64, menuItemIds []int64) {
+	if serviceId == 0 {
+		return
+	}
+	key := fmt.Sprintf("auth:role:%d:service:%d:menus", roleId, serviceId)
+	_, err := srbac.Rdb.Del(ctx, key).Result()
+	srbac.CheckError(err)
+	if len(menuItemIds) >= 1 {
+		menuItems := []*models.MenuItem{}
+		re := srbac.Db.Where("id IN ?", menuItemIds).Where("service_id = ?", serviceId).Find(&menuItems)
+		srbac.CheckError(re.Error)
+		values := []string{}
+		for _, menuItem := range menuItems {
+			values = append(values, menuItem.Key)
+		}
+		_, err = srbac.Rdb.SAdd(ctx, key, values).Result()
+		srbac.CheckError(err)
+	}
+}
+
+// 将角色和菜单节点的关系从缓存中删除
+func DelRoleMenuItems(roleId int64) {
+	roleServices := []*models.RoleService{}
+	re := srbac.Db.Where("role_id = ?", roleId).Find(&roleServices)
+	srbac.CheckError(re.Error)
+	keys := []string{}
+	for _, roleService := range roleServices {
+		keys = append(keys, fmt.Sprintf("auth:role:%d:service:%d:menus", roleId, roleService.ServiceId))
+	}
+	_, err := srbac.Rdb.Del(ctx, keys...).Result()
+	srbac.CheckError(err)
+}
+
+// 将角色和菜单节点的关系从缓存中删除
+func DelRoleMenuItemsByServiceId(serviceId int64) {
+	roleServices := []*models.RoleService{}
+	re := srbac.Db.Where("service_id = ?", serviceId).Find(&roleServices)
+	srbac.CheckError(re.Error)
+	keys := []string{}
+	for _, roleService := range roleServices {
+		keys = append(keys, fmt.Sprintf("auth:role:%d:service:%d:menus", roleService.RoleId, serviceId))
+	}
+	_, err := srbac.Rdb.Del(ctx, keys...).Result()
+	srbac.CheckError(err)
+}
+
+// 将角色和菜单节点的关系从缓存中删除
+func DelRoleMenuItemsByRoleService(roleService *models.RoleService) {
+	key := fmt.Sprintf("auth:role:%d:service:%d:menus", roleService.RoleId, roleService.ServiceId)
+	_, err := srbac.Rdb.Del(ctx, key).Result()
 	srbac.CheckError(err)
 }

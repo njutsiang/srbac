@@ -99,5 +99,6 @@ func (this *ServiceController) Delete(c *gin.Context) {
 	cache.DelService(id)
 	cache.DelRoleApiItemsByServiceId(id)
 	cache.DelRoleDataItemsByServiceId(id)
+	cache.DelRoleMenuItemsByServiceId(id)
 	this.Redirect(c, referer)
 }
