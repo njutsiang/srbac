@@ -183,6 +183,22 @@ func (this *UserServiceController) Delete(c *gin.Context) {
 	re = srbac.Db.Delete(userService)
 	srbac.CheckError(re.Error)
 
+	re = srbac.Db.
+		Where("user_id = ?", userService.UserId).
+		Where("service_id = ?", userService.ServiceId).
+		Delete(&models.UserApiItem{})
+	srbac.CheckError(re.Error)
+	re = srbac.Db.
+		Where("user_id = ?", userService.UserId).
+		Where("service_id = ?", userService.ServiceId).
+		Delete(&models.UserDataItem{})
+	srbac.CheckError(re.Error)
+	re = srbac.Db.
+		Where("user_id = ?", userService.UserId).
+		Where("service_id = ?", userService.ServiceId).
+		Delete(&models.UserMenuItem{})
+	srbac.CheckError(re.Error)
+
 	cache.DelUserApiItemsByUserService(userService)
 	cache.DelUserDataItemsByUserService(userService)
 	cache.DelUserMenuItemsByUserService(userService)

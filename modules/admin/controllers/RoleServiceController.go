@@ -147,6 +147,22 @@ func (this *RoleServiceController) Delete(c *gin.Context) {
 	re = srbac.Db.Delete(roleService)
 	srbac.CheckError(re.Error)
 
+	re = srbac.Db.
+		Where("role_id = ?", roleService.RoleId).
+		Where("service_id = ?", roleService.ServiceId).
+		Delete(&models.RoleApiItem{})
+	srbac.CheckError(re.Error)
+	re = srbac.Db.
+		Where("role_id = ?", roleService.RoleId).
+		Where("service_id = ?", roleService.ServiceId).
+		Delete(&models.RoleDataItem{})
+	srbac.CheckError(re.Error)
+	re = srbac.Db.
+		Where("role_id = ?", roleService.RoleId).
+		Where("service_id = ?", roleService.ServiceId).
+		Delete(&models.RoleMenuItem{})
+	srbac.CheckError(re.Error)
+
 	cache.DelRoleApiItemsByRoleService(roleService)
 	cache.DelRoleDataItemsByRoleService(roleService)
 	cache.DelRoleMenuItemsByRoleService(roleService)
