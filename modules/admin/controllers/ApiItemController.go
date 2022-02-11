@@ -1,7 +1,9 @@
 package admin
 
 import (
+	"errors"
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 	"srbac/cache"
 	"srbac/controllers"
 	"srbac/libraries/utils"
@@ -84,6 +86,9 @@ func (this *ApiItemController) Edit(c *gin.Context) {
 
 	apiItem := &models.ApiItem{}
 	re := srbac.Db.First(apiItem, id)
+	if errors.Is(re.Error, gorm.ErrRecordNotFound) {
+		this.Redirect(c, referer)
+	}
 	srbac.CheckError(re.Error)
 
 	if c.Request.Method == "POST" {
@@ -121,9 +126,14 @@ func (this *ApiItemController) Delete(c *gin.Context) {
 
 	apiItem := &models.ApiItem{}
 	re := srbac.Db.First(apiItem, id)
+	if errors.Is(re.Error, gorm.ErrRecordNotFound) {
+		this.Redirect(c, referer)
+	}
 	srbac.CheckError(re.Error)
 
-	srbac.Db.Delete(apiItem)
+	re = srbac.Db.Delete(apiItem)
+	srbac.CheckError(re.Error)
+
 	cache.DelApiItem(apiItem)
 	this.Redirect(c, referer)
 }

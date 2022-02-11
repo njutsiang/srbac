@@ -1,8 +1,10 @@
 package admin
 
 import (
+	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 	"srbac/cache"
 	"srbac/code"
 	"srbac/controllers"
@@ -19,21 +21,27 @@ type UserDataItemController struct {
 
 // 编辑用户的数据权限
 func (this *UserDataItemController) Edit(c *gin.Context) {
+	userId := utils.ToInt(c.Query("userId"))
 	userServiceId := utils.ToInt(c.Query("userServiceId"))
 	if userServiceId <= 0 {
 		exception.NewException(code.ParamsError)
 	}
+	referer := this.GetReferer(c, fmt.Sprintf("/admin/user-service/list?userId=%d", userId))
 
 	userService := &models.UserService{}
 	re := srbac.Db.First(userService, userServiceId)
+	if errors.Is(re.Error, gorm.ErrRecordNotFound) {
+		this.Redirect(c, referer)
+	}
 	srbac.CheckError(re.Error)
 
 	models.UserServicesLoadServices([]*models.UserService{userService})
 
-	referer := this.GetReferer(c, fmt.Sprintf("/admin/user-service/list?userId=%d", userService.UserId))
-
 	user := &models.User{}
 	re = srbac.Db.First(user, userService.UserId)
+	if errors.Is(re.Error, gorm.ErrRecordNotFound) {
+		this.Redirect(c, referer)
+	}
 	srbac.CheckError(re.Error)
 
 	dataItems := []*models.DataItem{}

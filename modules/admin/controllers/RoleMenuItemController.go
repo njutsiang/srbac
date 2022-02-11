@@ -1,8 +1,10 @@
 package admin
 
 import (
+	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 	"srbac/cache"
 	"srbac/code"
 	"srbac/controllers"
@@ -19,21 +21,27 @@ type RoleMenuItemController struct {
 
 // 编辑角色的菜单权限
 func (this *RoleMenuItemController) Edit(c *gin.Context) {
+	roleId := utils.ToInt(c.Query("roleId"))
 	roleServiceId := utils.ToInt(c.Query("roleServiceId"))
 	if roleServiceId <= 0 {
 		exception.NewException(code.ParamsError)
 	}
+	referer := this.GetReferer(c, fmt.Sprintf("/admin/role-service/list?roleId=%d", roleId))
 
 	roleService := &models.RoleService{}
 	re := srbac.Db.First(roleService, roleServiceId)
+	if errors.Is(re.Error, gorm.ErrRecordNotFound) {
+		this.Redirect(c, referer)
+	}
 	srbac.CheckError(re.Error)
 
 	models.RoleServicesLoadServices([]*models.RoleService{roleService})
 
-	referer := this.GetReferer(c, fmt.Sprintf("/admin/role-service/list?roleId=%d", roleService.RoleId))
-
 	role := &models.Role{}
 	re = srbac.Db.First(role, roleService.RoleId)
+	if errors.Is(re.Error, gorm.ErrRecordNotFound) {
+		this.Redirect(c, referer)
+	}
 	srbac.CheckError(re.Error)
 
 	menuItems := []*models.MenuItem{}

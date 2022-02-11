@@ -1,7 +1,9 @@
 package admin
 
 import (
+	"errors"
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 	"srbac/controllers"
 	"srbac/libraries/utils"
 	"srbac/models"
@@ -80,6 +82,9 @@ func (this *DataItemController) Edit(c *gin.Context) {
 
 	dataItem := &models.DataItem{}
 	re := srbac.Db.First(dataItem, id)
+	if errors.Is(re.Error, gorm.ErrRecordNotFound) {
+		this.Redirect(c, referer)
+	}
 	srbac.CheckError(re.Error)
 
 	if c.Request.Method == "POST" {

@@ -1,7 +1,9 @@
 package admin
 
 import (
+	"errors"
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 	"net/http"
 	"srbac/cache"
 	"srbac/controllers"
@@ -59,7 +61,6 @@ func (this *ServiceController) Add(c *gin.Context) {
 // 编辑服务
 func (this *ServiceController) Edit(c *gin.Context) {
 	referer := this.GetReferer(c, "/admin/service/list")
-
 	id := utils.ToInt(c.Query("id"))
 	if id <= 0 {
 		this.Redirect(c, referer)
@@ -67,6 +68,9 @@ func (this *ServiceController) Edit(c *gin.Context) {
 
 	service := &models.Service{}
 	re := srbac.Db.First(service, id)
+	if errors.Is(re.Error, gorm.ErrRecordNotFound) {
+		this.Redirect(c, referer)
+	}
 	srbac.CheckError(re.Error)
 
 	if c.Request.Method == "POST" {
@@ -89,19 +93,29 @@ func (this *ServiceController) Edit(c *gin.Context) {
 
 // 删除服务
 func (this *ServiceController) Delete(c *gin.Context) {
-	referer := this.GetReferer(c, "/admin/course/list", false)
+	referer := this.GetReferer(c, "/admin/service/list", false)
 	id := utils.ToInt64(c.Query("id"))
 	if id <= 0 {
 		this.Redirect(c, referer)
 	}
-	re := srbac.Db.Delete(&models.Service{}, id)
+
+	roleServices := []*models.RoleService{}
+	re := srbac.Db.Where("service_id = ?", id).Find(&roleServices)
 	srbac.CheckError(re.Error)
+
+	userServices := []*models.UserService{}
+	re = srbac.Db.Where("service_id = ?", id).Find(&userServices)
+	srbac.CheckError(re.Error)
+
+	re = srbac.Db.Delete(&models.Service{}, id)
+	srbac.CheckError(re.Error)
+
 	cache.DelService(id)
-	cache.DelRoleApiItemsByServiceId(id)
-	cache.DelRoleDataItemsByServiceId(id)
-	cache.DelRoleMenuItemsByServiceId(id)
-	cache.DelUserApiItemsByServiceId(id)
-	cache.DelUserDataItemsByServiceId(id)
-	cache.DelUserMenuItemsByServiceId(id)
+	cache.DelRoleApiItemsByRoleServices(roleServices)
+	cache.DelRoleDataItemsByRoleServices(roleServices)
+	cache.DelRoleMenuItemsByRoleServices(roleServices)
+	cache.DelUserApiItemsByUserServices(userServices)
+	cache.DelUserDataItemsByUserServices(userServices)
+	cache.DelUserMenuItemsByUserServices(userServices)
 	this.Redirect(c, referer)
 }

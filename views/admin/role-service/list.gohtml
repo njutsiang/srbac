@@ -44,9 +44,9 @@
                             <td>{{.GetServiceName}}</td>
                             <td>{{.GetCreatedAt}}</td>
                             <td>
-                                <a class="btn btn-sm btn-outline-primary no-border" href="/admin/role-api-item/edit?roleServiceId={{.Id}}">接口权限</a>
-                                <a class="btn btn-sm btn-outline-primary no-border" href="/admin/role-data-item/edit?roleServiceId={{.Id}}">数据权限</a>
-                                <a class="btn btn-sm btn-outline-primary no-border" href="/admin/role-menu-item/edit?roleServiceId={{.Id}}">菜单权限</a>
+                                <a class="btn btn-sm btn-outline-primary no-border" href="/admin/role-api-item/edit?roleServiceId={{.Id}}&roleId={{.RoleId}}">接口权限</a>
+                                <a class="btn btn-sm btn-outline-primary no-border" href="/admin/role-data-item/edit?roleServiceId={{.Id}}&roleId={{.RoleId}}">数据权限</a>
+                                <a class="btn btn-sm btn-outline-primary no-border" href="/admin/role-menu-item/edit?roleServiceId={{.Id}}&roleId={{.RoleId}}">菜单权限</a>
                                 <a class="btn btn-sm btn-outline-danger no-border" href="/admin/role-service/delete?roleId={{.RoleId}}&id={{.Id}}">取消</a>
                             </td>
                         </tr>

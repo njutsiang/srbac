@@ -1,8 +1,10 @@
 package admin
 
 import (
+	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 	"srbac/cache"
 	"srbac/code"
 	"srbac/controllers"
@@ -24,12 +26,16 @@ func (this *UserServiceController) List(c *gin.Context) {
 	if userId <= 0 {
 		exception.NewException(code.ParamsError)
 	}
+	referer := "/admin/user/list"
 
 	params := c.Request.URL.Query()
 	page, perPage := utils.GetPageInfo(params)
 
 	user := &models.User{}
 	re := srbac.Db.First(user, userId)
+	if errors.Is(re.Error, gorm.ErrRecordNotFound) {
+		this.Redirect(c, referer)
+	}
 	srbac.CheckError(re.Error)
 
 	count := int64(0)
@@ -88,6 +94,9 @@ func (this *UserServiceController) Edit(c *gin.Context) {
 
 	user := &models.User{}
 	re := srbac.Db.First(user, userId)
+	if errors.Is(re.Error, gorm.ErrRecordNotFound) {
+		this.Redirect(c, referer)
+	}
 	srbac.CheckError(re.Error)
 
 	services := []*models.Service{}
@@ -166,6 +175,9 @@ func (this *UserServiceController) Delete(c *gin.Context) {
 
 	userService := &models.UserService{}
 	re := srbac.Db.First(userService, id)
+	if errors.Is(re.Error, gorm.ErrRecordNotFound) {
+		this.Redirect(c, referer)
+	}
 	srbac.CheckError(re.Error)
 
 	re = srbac.Db.Delete(userService)

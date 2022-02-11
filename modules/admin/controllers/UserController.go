@@ -1,7 +1,9 @@
 package admin
 
 import (
+	"errors"
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 	"net/http"
 	"srbac/cache"
 	"srbac/controllers"
@@ -68,6 +70,9 @@ func (this *UserController) Edit(c *gin.Context) {
 
 	user := &models.User{}
 	re := srbac.Db.First(user, id)
+	if errors.Is(re.Error, gorm.ErrRecordNotFound) {
+		this.Redirect(c, referer)
+	}
 	srbac.CheckError(re.Error)
 
 	if c.Request.Method == "POST" {
@@ -97,11 +102,16 @@ func (this *UserController) Delete(c *gin.Context) {
 		this.Redirect(c, referer)
 	}
 
-	re := srbac.Db.Delete(&models.User{}, id)
+	userServices := []*models.UserService{}
+	re := srbac.Db.Where("user_id = ?", id).Find(&userServices)
 	srbac.CheckError(re.Error)
+
+	re = srbac.Db.Delete(&models.User{}, id)
+	srbac.CheckError(re.Error)
+
 	cache.DelUserRoles(id)
-	cache.DelUserApiItems(id)
-	cache.DelUserDataItems(id)
-	cache.DelUserMenuItems(id)
+	cache.DelUserApiItemsByUserServices(userServices)
+	cache.DelUserDataItemsByUserServices(userServices)
+	cache.DelUserMenuItemsByUserServices(userServices)
 	this.Redirect(c, referer)
 }

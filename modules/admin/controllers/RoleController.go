@@ -1,7 +1,9 @@
 package admin
 
 import (
+	"errors"
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 	"net/http"
 	"srbac/cache"
 	"srbac/controllers"
@@ -67,6 +69,9 @@ func (this *RoleController) Edit(c *gin.Context) {
 
 	role := &models.Role{}
 	re := srbac.Db.First(role, id)
+	if errors.Is(re.Error, gorm.ErrRecordNotFound) {
+		this.Redirect(c, referer)
+	}
 	srbac.CheckError(re.Error)
 
 	if c.Request.Method == "POST" {
@@ -94,10 +99,16 @@ func (this *RoleController) Delete(c *gin.Context) {
 	if id <= 0 {
 		this.Redirect(c, referer)
 	}
-	re := srbac.Db.Delete(&models.Role{}, id)
+
+	roleServices := []*models.RoleService{}
+	re := srbac.Db.Where("role_id = ?", id).Find(&roleServices)
 	srbac.CheckError(re.Error)
-	cache.DelRoleApiItems(id)
-	cache.DelRoleDataItems(id)
-	cache.DelRoleMenuItems(id)
+
+	re = srbac.Db.Delete(&models.Role{}, id)
+	srbac.CheckError(re.Error)
+
+	cache.DelRoleApiItemsByRoleServices(roleServices)
+	cache.DelRoleDataItemsByRoleServices(roleServices)
+	cache.DelRoleMenuItemsByRoleServices(roleServices)
 	this.Redirect(c, referer)
 }

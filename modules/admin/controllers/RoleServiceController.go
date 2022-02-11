@@ -1,8 +1,10 @@
 package admin
 
 import (
+	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 	"srbac/cache"
 	"srbac/code"
 	"srbac/controllers"
@@ -19,6 +21,7 @@ type RoleServiceController struct {
 
 // 角色服务关系列表
 func (this *RoleServiceController) List(c *gin.Context) {
+	referer := "/admin/role/list"
 	params := c.Request.URL.Query()
 	page, perPage := utils.GetPageInfo(params)
 
@@ -29,6 +32,9 @@ func (this *RoleServiceController) List(c *gin.Context) {
 
 	role := &models.Role{}
 	re := srbac.Db.First(role, roleId)
+	if errors.Is(re.Error, gorm.ErrRecordNotFound) {
+		this.Redirect(c, referer)
+	}
 	srbac.CheckError(re.Error)
 
 	count := int64(0)
@@ -61,6 +67,9 @@ func (this *RoleServiceController) Edit(c *gin.Context) {
 	// 当前角色
 	role := &models.Role{}
 	re := srbac.Db.First(role, roleId)
+	if errors.Is(re.Error, gorm.ErrRecordNotFound) {
+		this.Redirect(c, referer)
+	}
 	srbac.CheckError(re.Error)
 
 	// 所有服务
@@ -130,6 +139,9 @@ func (this *RoleServiceController) Delete(c *gin.Context) {
 
 	roleService := &models.RoleService{}
 	re := srbac.Db.First(roleService, id)
+	if errors.Is(re.Error, gorm.ErrRecordNotFound) {
+		this.Redirect(c, referer)
+	}
 	srbac.CheckError(re.Error)
 
 	re = srbac.Db.Delete(roleService)
