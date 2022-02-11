@@ -3,6 +3,7 @@ package admin
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"srbac/cache"
 	"srbac/code"
 	"srbac/controllers"
 	"srbac/exception"
@@ -119,6 +120,9 @@ func (this *UserServiceController) Edit(c *gin.Context) {
 		for _, userService := range userServices {
 			if !utils.InSlice(userService.ServiceId, newServiceIds) && !utils.InSlice(userService.ServiceId, roleServiceIds) {
 				srbac.Db.Delete(userService)
+				cache.DelUserApiItemsByUserService(userService)
+				cache.DelUserDataItemsByUserService(userService)
+				cache.DelUserMenuItemsByUserService(userService)
 			}
 		}
 
@@ -159,6 +163,16 @@ func (this *UserServiceController) Delete(c *gin.Context) {
 		exception.NewException(code.ParamsError)
 	}
 	referer := this.GetReferer(c, fmt.Sprintf("/admin/user-service/list?userId=%d", userId))
-	srbac.Db.Delete(&models.UserService{}, id)
+
+	userService := &models.UserService{}
+	re := srbac.Db.First(userService, id)
+	srbac.CheckError(re.Error)
+
+	re = srbac.Db.Delete(userService)
+	srbac.CheckError(re.Error)
+
+	cache.DelUserApiItemsByUserService(userService)
+	cache.DelUserDataItemsByUserService(userService)
+	cache.DelUserMenuItemsByUserService(userService)
 	this.Redirect(c, referer)
 }

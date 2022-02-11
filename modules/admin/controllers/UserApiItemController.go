@@ -3,6 +3,7 @@ package admin
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"srbac/cache"
 	"srbac/code"
 	"srbac/controllers"
 	"srbac/exception"
@@ -76,6 +77,7 @@ func (this *UserApiItemController) Edit(c *gin.Context) {
 				}
 			}
 		}
+		cache.SetUserApiItemIds(userService.UserId, userService.ServiceId, newApiItemIds)
 		if !hasErr {
 			this.Redirect(c, referer)
 		}

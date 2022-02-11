@@ -100,5 +100,8 @@ func (this *UserController) Delete(c *gin.Context) {
 	re := srbac.Db.Delete(&models.User{}, id)
 	srbac.CheckError(re.Error)
 	cache.DelUserRoles(id)
+	cache.DelUserApiItems(id)
+	cache.DelUserDataItems(id)
+	cache.DelUserMenuItems(id)
 	this.Redirect(c, referer)
 }

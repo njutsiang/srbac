@@ -3,6 +3,7 @@ package admin
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"srbac/cache"
 	"srbac/code"
 	"srbac/controllers"
 	"srbac/exception"
@@ -76,6 +77,7 @@ func (this *UserMenuItemController) Edit(c *gin.Context) {
 				}
 			}
 		}
+		cache.SetUserMenuItemIds(userService.UserId, userService.ServiceId, newMenuItemIds)
 		if !hasErr {
 			this.Redirect(c, referer)
 		}

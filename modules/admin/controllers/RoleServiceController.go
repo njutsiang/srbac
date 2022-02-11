@@ -89,6 +89,9 @@ func (this *RoleServiceController) Edit(c *gin.Context) {
 		for _, roleService := range roleServices {
 			if !utils.InSlice(roleService.ServiceId, NewServiceIds) {
 				srbac.Db.Delete(roleService)
+				cache.DelRoleApiItemsByRoleService(roleService)
+				cache.DelRoleDataItemsByRoleService(roleService)
+				cache.DelRoleMenuItemsByRoleService(roleService)
 			}
 		}
 
