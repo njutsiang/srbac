@@ -60,6 +60,7 @@ func (this *ApiItem) SetRefValue() {
 // 向实例载入属性
 func (this *ApiItem) SetAttributes(data map[string]interface{}) {
 	delete(data, "id")
+	delete(data, "service_id")
 	delete(data, "updated_at")
 	delete(data, "created_at")
 	this.old.Method = this.Method
