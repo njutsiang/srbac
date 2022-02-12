@@ -16,6 +16,7 @@ func main() {
 
 	// 注册中间件
 	srbac.Engine.Use(middlewares.ErrorHandle)
+	srbac.Engine.Use(middlewares.SessionHandle)
 
 	// 配置路由
 	routers.SetRouters(srbac.Engine)

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    {{template "head" .}}
+</head>
+<body>
+<div class="login-main">
+    <div class="top-notice">
+        {{if .failed}}
+            <div class="alert alert-danger alert-dismissible fade show box-shadow" role="alert">
+                <i class="bi-exclamation-circle-fill"></i> {{.failed}}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {{end}}
+    </div>
+    <form class="login-form box-shadow" method="post" action="{{.uri}}">
+        <h1 class="login-h1">SRBAC</h1>
+        <h2 class="login-h2">基于服务和角色的访问控制</h2>
+        <div class="mb-3">
+            <label for="username" class="form-label">账号</label>
+            <input type="text" class="form-control" id="username" name="username" placeholder="请输入账号" value="{{.form.Username}}">
+        </div>
+        <div class="mb-3">
+            <label for="password" class="form-label">密码</label>
+            <input type="password" class="form-control" id="password" name="password" placeholder="请输入密码" value="{{.form.Password}}">
+        </div>
+        <div class="mb-3 form-check">
+            <input type="checkbox" class="form-check-input" id="remember_me" name="remember_me" value="1" {{if eq .form.RememberMe 1}}checked="checked"{{end}}>
+            <label class="form-check-label" for="remember_me">记住我（30天内自动登录）</label>
+        </div>
+        <button type="submit" class="btn btn-primary">登录</button>
+    </form>
+</div>
+{{template "footer" .}}
+</body>
+</html>

@@ -265,3 +265,26 @@ main {
 .nav-link {
     padding: 6px 1rem;
 }
+.login-main {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+}
+.login-form {
+    width: 450px;
+    padding: 30px;
+    background: #fff;
+    border-radius: .25rem;
+}
+.login-h1, .login-h2 {
+    text-align: center;
+}
+.login-h1 {
+    padding-top: 10px;
+}
+.login-h2 {
+    font-size: 20px;
+    margin-bottom: 30px;
+}

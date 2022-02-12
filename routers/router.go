@@ -18,6 +18,11 @@ func SetRouters(engine *gin.Engine) {
 	// 后台首页
 	engine.GET("/admin", (&admin.DefaultController{}).Index)
 
+	// 登录
+	engine.GET("/admin/login", (&admin.LoginController{}).Login)
+	engine.POST("/admin/login", (&admin.LoginController{}).Login)
+	engine.GET("/admin/logout", (&admin.LoginController{}).Logout)
+
 	// 服务管理
 	engine.GET("/admin/service/list", (&admin.ServiceController{}).List)
 	engine.GET("/admin/service/add", (&admin.ServiceController{}).Add)
