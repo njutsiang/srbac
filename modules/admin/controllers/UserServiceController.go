@@ -124,36 +124,43 @@ func (this *UserServiceController) Edit(c *gin.Context) {
 		err := c.Request.ParseForm()
 		srbac.CheckError(err)
 		newServiceIds := utils.ToSliceInt64(c.Request.PostForm["service_id[]"])
-
-		// 删除
-		for _, userService := range userServices {
-			if !utils.InSlice(userService.ServiceId, newServiceIds) && !utils.InSlice(userService.ServiceId, roleServiceIds) {
-				srbac.Db.Delete(userService)
-				cache.DelUserApiItemsByUserService(userService)
-				cache.DelUserDataItemsByUserService(userService)
-				cache.DelUserMenuItemsByUserService(userService)
-			}
-		}
-
-		// 新增
-		hasErr := false
-		for _, serviceId := range newServiceIds {
-			if !utils.InSlice(serviceId, serviceIds) {
-				userService := models.NewUserService(map[string]interface{}{
-					"user_id": userId,
-					"service_id": serviceId,
-				})
-				if !(userService.Validate() && userService.Create()) {
-					hasErr = true
-					this.SetFailed(c, userService.GetError())
-					break
+		deleteUserServices := []*models.UserService{}
+		if err := srbac.Db.Transaction(func(db *gorm.DB) error {
+			// 删除
+			for _, userService := range userServices {
+				if !utils.InSlice(userService.ServiceId, newServiceIds) && !utils.InSlice(userService.ServiceId, roleServiceIds) {
+					if err := db.Delete(userService).Error; err != nil {
+						return err
+					}
+					deleteUserServices = append(deleteUserServices, userService)
 				}
 			}
-		}
-		if !hasErr {
+			// 新增
+			for _, serviceId := range newServiceIds {
+				if !utils.InSlice(serviceId, serviceIds) {
+					userService := models.NewUserService(map[string]interface{}{
+						"user_id": userId,
+						"service_id": serviceId,
+					})
+					userService.SetDb(db)
+					if !(userService.Validate() && userService.Create()) {
+						return errors.New(userService.GetError())
+					}
+				}
+			}
+			return nil
+		}); err == nil {
+			for _, deleteUserService := range deleteUserServices {
+				cache.DelUserApiItemsByUserService(deleteUserService)
+				cache.DelUserDataItemsByUserService(deleteUserService)
+				cache.DelUserMenuItemsByUserService(deleteUserService)
+			}
 			this.Redirect(c, referer)
+		} else {
+			this.SetFailed(c, err.Error())
 		}
 	}
+
 	this.HTML(c, "./views/admin/user-service/edit.gohtml", map[string]interface{}{
 		"menu": "user",
 		"title": user.Name,
@@ -180,24 +187,28 @@ func (this *UserServiceController) Delete(c *gin.Context) {
 	}
 	srbac.CheckError(re.Error)
 
-	re = srbac.Db.Delete(userService)
-	srbac.CheckError(re.Error)
-
-	re = srbac.Db.
-		Where("user_id = ?", userService.UserId).
-		Where("service_id = ?", userService.ServiceId).
-		Delete(&models.UserApiItem{})
-	srbac.CheckError(re.Error)
-	re = srbac.Db.
-		Where("user_id = ?", userService.UserId).
-		Where("service_id = ?", userService.ServiceId).
-		Delete(&models.UserDataItem{})
-	srbac.CheckError(re.Error)
-	re = srbac.Db.
-		Where("user_id = ?", userService.UserId).
-		Where("service_id = ?", userService.ServiceId).
-		Delete(&models.UserMenuItem{})
-	srbac.CheckError(re.Error)
+	err := srbac.Db.Transaction(func(db *gorm.DB) error {
+		if err := db.Delete(userService).Error; err != nil {
+			return err
+		}
+		if err := db.Where("user_id = ?", userService.UserId).
+			Where("service_id = ?", userService.ServiceId).
+			Delete(&models.UserApiItem{}).Error; err != nil {
+				return err
+		}
+		if err := db.Where("user_id = ?", userService.UserId).
+			Where("service_id = ?", userService.ServiceId).
+			Delete(&models.UserDataItem{}).Error; err != nil {
+				return err
+		}
+		if err := db.Where("user_id = ?", userService.UserId).
+			Where("service_id = ?", userService.ServiceId).
+			Delete(&models.UserMenuItem{}).Error; err != nil {
+				return err
+		}
+		return nil
+	})
+	srbac.CheckError(err)
 
 	cache.DelUserApiItemsByUserService(userService)
 	cache.DelUserDataItemsByUserService(userService)

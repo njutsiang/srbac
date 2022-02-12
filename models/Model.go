@@ -5,6 +5,7 @@ import (
 	"github.com/go-playground/locales/zh"
 	"github.com/go-playground/universal-translator"
 	"github.com/go-playground/validator/v10"
+	"gorm.io/gorm"
 	"reflect"
 	"srbac/code"
 	"srbac/exception"
@@ -22,6 +23,7 @@ type Model struct {
 	error error
 	errorMessages map[string]string
 	refValue reflect.Value
+	db *gorm.DB
 }
 
 // 实例化验证器
@@ -176,7 +178,7 @@ func (this *Model) Create() bool {
 	if !this.refValue.IsValid() {
 		log.Panic("Model.refValue 无效")
 	}
-	if r := srbac.Db.Create(this.refValue.Interface()); r.Error == nil {
+	if r := this.GetDb().Create(this.refValue.Interface()); r.Error == nil {
 		return true
 	} else {
 		this.error = r.Error
@@ -189,10 +191,24 @@ func (this *Model) Update() bool {
 	if !this.refValue.IsValid() {
 		log.Panic("Model.refValue 无效")
 	}
-	if r := srbac.Db.Save(this.refValue.Interface()); r.Error == nil {
+	if r := this.GetDb().Save(this.refValue.Interface()); r.Error == nil {
 		return true
 	} else {
 		this.error = r.Error
 		return false
+	}
+}
+
+// 设置数据库连接
+func (this *Model) SetDb(db *gorm.DB) {
+	this.db = db
+}
+
+// 获取数据库连接
+func (this *Model) GetDb() *gorm.DB {
+	if this.db == nil {
+		return srbac.Db
+	} else {
+		return this.db
 	}
 }

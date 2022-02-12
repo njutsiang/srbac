@@ -61,33 +61,35 @@ func (this *UserApiItemController) Edit(c *gin.Context) {
 		err := c.Request.ParseForm()
 		srbac.CheckError(err)
 		newApiItemIds := utils.ToSliceInt64(c.Request.PostForm["api_item_id[]"])
-
-		// 删除
-		for _, userApiItem := range userApiItems {
-			if !utils.InSlice(userApiItem.ApiItemId, newApiItemIds) {
-				srbac.Db.Delete(userApiItem)
-			}
-		}
-
-		// 新增
-		hasErr := false
-		for _, apiItemId := range newApiItemIds {
-			if !utils.InSlice(apiItemId, apiItemIds) {
-				userApiItem := models.NewUserApiItem(map[string]interface{}{
-					"user_id": userService.UserId,
-					"service_id": userService.ServiceId,
-					"api_item_id": apiItemId,
-				})
-				if !(userApiItem.Validate() && userApiItem.Create()) {
-					hasErr = true
-					this.SetFailed(c, userApiItem.GetError())
-					break
+		if err := srbac.Db.Transaction(func(db *gorm.DB) error {
+			// 删除
+			for _, userApiItem := range userApiItems {
+				if !utils.InSlice(userApiItem.ApiItemId, newApiItemIds) {
+					if err := db.Delete(userApiItem).Error; err != nil {
+						return err
+					}
 				}
 			}
-		}
-		cache.SetUserApiItemIds(userService.UserId, userService.ServiceId, newApiItemIds)
-		if !hasErr {
+			// 新增
+			for _, apiItemId := range newApiItemIds {
+				if !utils.InSlice(apiItemId, apiItemIds) {
+					userApiItem := models.NewUserApiItem(map[string]interface{}{
+						"user_id": userService.UserId,
+						"service_id": userService.ServiceId,
+						"api_item_id": apiItemId,
+					})
+					userApiItem.SetDb(db)
+					if !(userApiItem.Validate() && userApiItem.Create()) {
+						return errors.New(userApiItem.GetError())
+					}
+				}
+			}
+			return nil
+		}); err == nil {
+			cache.SetUserApiItemIds(userService.UserId, userService.ServiceId, newApiItemIds)
 			this.Redirect(c, referer)
+		} else {
+			this.SetFailed(c, err.Error())
 		}
 	}
 

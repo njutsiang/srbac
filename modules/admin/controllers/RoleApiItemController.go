@@ -63,33 +63,35 @@ func (this *RoleApiItemController) Edit(c *gin.Context) {
 		err := c.Request.ParseForm()
 		srbac.CheckError(err)
 		newApiItemIds := utils.ToSliceInt64(c.Request.PostForm["api_item_id[]"])
-
-		// 删除
-		for _, roleApiItem := range roleApiItems {
-			if !utils.InSlice(roleApiItem.ApiItemId, newApiItemIds) {
-				srbac.Db.Delete(roleApiItem)
-			}
-		}
-
-		// 新增
-		hasErr := false
-		for _, apiItemId := range newApiItemIds {
-			if !utils.InSlice(apiItemId, apiItemIds) {
-				roleApiItem := models.NewRoleApiItem(map[string]interface{}{
-					"role_id": roleService.RoleId,
-					"service_id": roleService.ServiceId,
-					"api_item_id": apiItemId,
-				})
-				if !(roleApiItem.Validate() && roleApiItem.Create()) {
-					hasErr = true
-					this.SetFailed(c, roleApiItem.GetError())
-					break
+		if err := srbac.Db.Transaction(func(db *gorm.DB) error {
+			// 删除
+			for _, roleApiItem := range roleApiItems {
+				if !utils.InSlice(roleApiItem.ApiItemId, newApiItemIds) {
+					if err := db.Delete(roleApiItem).Error; err != nil {
+						return err
+					}
 				}
 			}
-		}
-		cache.SetRoleApiItemIds(roleService.RoleId, roleService.GetServiceId(), newApiItemIds)
-		if !hasErr {
+			// 新增
+			for _, apiItemId := range newApiItemIds {
+				if !utils.InSlice(apiItemId, apiItemIds) {
+					roleApiItem := models.NewRoleApiItem(map[string]interface{}{
+						"role_id": roleService.RoleId,
+						"service_id": roleService.ServiceId,
+						"api_item_id": apiItemId,
+					})
+					roleApiItem.SetDb(db)
+					if !(roleApiItem.Validate() && roleApiItem.Create()) {
+						return errors.New(roleApiItem.GetError())
+					}
+				}
+			}
+			return nil
+		}); err == nil {
+			cache.SetRoleApiItemIds(roleService.RoleId, roleService.GetServiceId(), newApiItemIds)
 			this.Redirect(c, referer)
+		} else {
+			this.SetFailed(c, err.Error())
 		}
 	}
 

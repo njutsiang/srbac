@@ -63,33 +63,35 @@ func (this *RoleMenuItemController) Edit(c *gin.Context) {
 		err := c.Request.ParseForm()
 		srbac.CheckError(err)
 		newMenuItemIds := utils.ToSliceInt64(c.Request.PostForm["menu_item_id[]"])
-
-		// 删除
-		for _, roleMenuItem := range roleMenuItems {
-			if !utils.InSlice(roleMenuItem.MenuItemId, newMenuItemIds) {
-				srbac.Db.Delete(roleMenuItem)
-			}
-		}
-
-		// 新增
-		hasErr := false
-		for _, menuItemId := range newMenuItemIds {
-			if !utils.InSlice(menuItemId, menuItemIds) {
-				roleMenuItem := models.NewRoleMenuItem(map[string]interface{}{
-					"role_id": roleService.RoleId,
-					"service_id": roleService.ServiceId,
-					"menu_item_id": menuItemId,
-				})
-				if !(roleMenuItem.Validate() && roleMenuItem.Create()) {
-					hasErr = true
-					this.SetFailed(c, roleMenuItem.GetError())
-					break
+		if err := srbac.Db.Transaction(func(db *gorm.DB) error {
+			// 删除
+			for _, roleMenuItem := range roleMenuItems {
+				if !utils.InSlice(roleMenuItem.MenuItemId, newMenuItemIds) {
+					if err := db.Delete(roleMenuItem).Error; err != nil {
+						return err
+					}
 				}
 			}
-		}
-		cache.SetRoleMenuItemIds(roleService.RoleId, roleService.ServiceId, newMenuItemIds)
-		if !hasErr {
+			// 新增
+			for _, menuItemId := range newMenuItemIds {
+				if !utils.InSlice(menuItemId, menuItemIds) {
+					roleMenuItem := models.NewRoleMenuItem(map[string]interface{}{
+						"role_id": roleService.RoleId,
+						"service_id": roleService.ServiceId,
+						"menu_item_id": menuItemId,
+					})
+					roleMenuItem.SetDb(db)
+					if !(roleMenuItem.Validate() && roleMenuItem.Create()) {
+						return errors.New(roleMenuItem.GetError())
+					}
+				}
+			}
+			return nil
+		}); err == nil {
+			cache.SetRoleMenuItemIds(roleService.RoleId, roleService.ServiceId, newMenuItemIds)
 			this.Redirect(c, referer)
+		} else {
+			this.SetFailed(c, err.Error())
 		}
 	}
 

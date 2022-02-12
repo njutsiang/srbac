@@ -92,32 +92,42 @@ func (this *RoleServiceController) Edit(c *gin.Context) {
 		// 取参数
 		err := c.Request.ParseForm()
 		srbac.CheckError(err)
-		NewServiceIds := utils.ToSliceInt64(c.Request.PostForm["service_id[]"])
-
-		// 删除
-		for _, roleService := range roleServices {
-			if !utils.InSlice(roleService.ServiceId, NewServiceIds) {
-				srbac.Db.Delete(roleService)
-				cache.DelRoleApiItemsByRoleService(roleService)
-				cache.DelRoleDataItemsByRoleService(roleService)
-				cache.DelRoleMenuItemsByRoleService(roleService)
-			}
-		}
-
-		// 新增
-		for _, serviceId := range NewServiceIds {
-			if !utils.InSlice(serviceId, serviceIds) {
-				roleService := models.NewRoleService(map[string]interface{}{
-					"role_id": roleId,
-					"service_id": serviceId,
-				})
-				if !(roleService.Validate() && roleService.Create()) {
-					this.SetFailed(c, roleService.GetError())
-					break
+		newServiceIds := utils.ToSliceInt64(c.Request.PostForm["service_id[]"])
+		deleteRoleServices := []*models.RoleService{}
+		if err := srbac.Db.Transaction(func(db *gorm.DB) error {
+			// 删除
+			for _, roleService := range roleServices {
+				if !utils.InSlice(roleService.ServiceId, newServiceIds) {
+					if err := db.Delete(roleService).Error; err != nil {
+						return err
+					}
+					deleteRoleServices = append(deleteRoleServices, roleService)
 				}
 			}
+			// 新增
+			for _, serviceId := range newServiceIds {
+				if !utils.InSlice(serviceId, serviceIds) {
+					roleService := models.NewRoleService(map[string]interface{}{
+						"role_id": roleId,
+						"service_id": serviceId,
+					})
+					roleService.SetDb(db)
+					if !(roleService.Validate() && roleService.Create()) {
+						return errors.New(roleService.GetError())
+					}
+				}
+			}
+			return nil
+		}); err == nil {
+			for _, deleteRoleService := range deleteRoleServices {
+				cache.DelRoleApiItemsByRoleService(deleteRoleService)
+				cache.DelRoleDataItemsByRoleService(deleteRoleService)
+				cache.DelRoleMenuItemsByRoleService(deleteRoleService)
+			}
+			this.Redirect(c, referer)
+		} else {
+			this.SetFailed(c, err.Error())
 		}
-		this.Redirect(c, referer)
 	}
 
 	this.HTML(c, "./views/admin/role-service/edit.gohtml", map[string]interface{}{
@@ -144,24 +154,28 @@ func (this *RoleServiceController) Delete(c *gin.Context) {
 	}
 	srbac.CheckError(re.Error)
 
-	re = srbac.Db.Delete(roleService)
-	srbac.CheckError(re.Error)
-
-	re = srbac.Db.
-		Where("role_id = ?", roleService.RoleId).
-		Where("service_id = ?", roleService.ServiceId).
-		Delete(&models.RoleApiItem{})
-	srbac.CheckError(re.Error)
-	re = srbac.Db.
-		Where("role_id = ?", roleService.RoleId).
-		Where("service_id = ?", roleService.ServiceId).
-		Delete(&models.RoleDataItem{})
-	srbac.CheckError(re.Error)
-	re = srbac.Db.
-		Where("role_id = ?", roleService.RoleId).
-		Where("service_id = ?", roleService.ServiceId).
-		Delete(&models.RoleMenuItem{})
-	srbac.CheckError(re.Error)
+	err := srbac.Db.Transaction(func(db *gorm.DB) error {
+		if err := db.Delete(roleService).Error; err != nil {
+			return err
+		}
+		if err := db.Where("role_id = ?", roleService.RoleId).
+			Where("service_id = ?", roleService.ServiceId).
+			Delete(&models.RoleApiItem{}).Error; err != nil {
+				return err
+		}
+		if err := db.Where("role_id = ?", roleService.RoleId).
+			Where("service_id = ?", roleService.ServiceId).
+			Delete(&models.RoleDataItem{}).Error; err != nil {
+				return err
+		}
+		if err := db.Where("role_id = ?", roleService.RoleId).
+			Where("service_id = ?", roleService.ServiceId).
+			Delete(&models.RoleMenuItem{}).Error; err != nil {
+				return err
+		}
+		return nil
+	})
+	srbac.CheckError(err)
 
 	cache.DelRoleApiItemsByRoleService(roleService)
 	cache.DelRoleDataItemsByRoleService(roleService)

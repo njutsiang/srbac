@@ -88,32 +88,34 @@ func (this *UserRoleController) Edit(c *gin.Context) {
 		err := c.Request.ParseForm()
 		srbac.CheckError(err)
 		newRoleIds := utils.ToSliceInt64(c.Request.PostForm["role_id[]"])
-
-		// 删除
-		for _, userRole := range userRoles {
-			if !utils.InSlice(userRole.RoleId, newRoleIds) {
-				srbac.Db.Delete(userRole)
-			}
-		}
-
-		// 新增
-		hasErr := false
-		for _, roleId := range newRoleIds {
-			if !utils.InSlice(roleId, roleIds) {
-				userRole := models.NewUserRole(map[string]interface{}{
-					"user_id": userId,
-					"role_id": roleId,
-				})
-				if !(userRole.Validate() && userRole.Create()) {
-					hasErr = true
-					this.SetFailed(c, userRole.GetError())
-					break
+		if err := srbac.Db.Transaction(func(db *gorm.DB) error {
+			// 删除
+			for _, userRole := range userRoles {
+				if !utils.InSlice(userRole.RoleId, newRoleIds) {
+					if err := db.Delete(userRole).Error; err != nil {
+						return err
+					}
 				}
 			}
-		}
-		cache.SetUserRoleIds(userId, newRoleIds)
-		if !hasErr {
+			// 新增
+			for _, roleId := range newRoleIds {
+				if !utils.InSlice(roleId, roleIds) {
+					userRole := models.NewUserRole(map[string]interface{}{
+						"user_id": userId,
+						"role_id": roleId,
+					})
+					userRole.SetDb(db)
+					if !(userRole.Validate() && userRole.Create()) {
+						return errors.New(userRole.GetError())
+					}
+				}
+			}
+			return nil
+		}); err == nil {
+			cache.SetUserRoleIds(userId, newRoleIds)
 			this.Redirect(c, referer)
+		} else {
+			this.SetFailed(c, err.Error())
 		}
 	}
 
