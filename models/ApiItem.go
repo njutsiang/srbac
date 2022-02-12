@@ -17,9 +17,9 @@ type ApiItem struct {
 	}
 	Id int64 `label:"ID"`
 	ServiceId int64 `label:"所属服务" validate:"required"`
-	Method string `label:"请求方式" validate:"required"`
-	Uri string `label:"接口路由" validate:"required"`
-	Name string `label:"接口名称"`
+	Method string `label:"请求方式" validate:"required,max=8"`
+	Uri string `label:"接口路由" validate:"required,max=128"`
+	Name string `label:"接口名称" validate:"max=32"`
 	IsAnonymousAccess int64 `label:"是否允许匿名文档"`
 	UpdatedAt int64 `label:"更新时间"`
 	CreatedAt int64 `label:"创建时间" validate:"required"`

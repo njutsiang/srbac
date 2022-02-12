@@ -14,8 +14,8 @@ type Service struct {
 		Key string
 	}
 	Id int64 `label:"ID"`
-	Key string `label:"服务标识" validate:"required"`
-	Name string `label:"服务名称"`
+	Key string `label:"服务标识" validate:"required,max=32"`
+	Name string `label:"服务名称" validate:"max=32"`
 	UpdatedAt int64 `label:"更新时间"`
 	CreatedAt int64 `label:"创建时间" validate:"required"`
 }

@@ -11,8 +11,8 @@ import (
 type Role struct {
 	Model
 	Id int64 `label:"ID"`
-	Key string `label:"角色标识" validate:"required"`
-	Name string `label:"角色名称" validate:"required"`
+	Key string `label:"角色标识" validate:"required,max=32"`
+	Name string `label:"角色名称" validate:"required,max=32"`
 	UpdatedAt int64 `label:"更新时间"`
 	CreatedAt int64 `label:"创建时间" validate:"required"`
 }

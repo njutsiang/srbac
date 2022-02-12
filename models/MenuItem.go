@@ -16,8 +16,8 @@ type MenuItem struct {
 	}
 	Id int64 `label:"ID"`
 	ServiceId int64 `label:"所属服务" validate:"required"`
-	Key string `label:"菜单标识" validate:"required"`
-	Name string `label:"菜单名称" validate:"required"`
+	Key string `label:"菜单标识" validate:"required,max=32"`
+	Name string `label:"菜单名称" validate:"required,max=32"`
 	UpdatedAt int64 `label:"更新时间"`
 	CreatedAt int64 `label:"创建时间" validate:"required"`
 }

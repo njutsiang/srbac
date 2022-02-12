@@ -82,8 +82,8 @@ func (this *Model) InitValidate() {
 func (this *Model) InitTranslation() {
 	for tag, message := range map[string]string{
 		"required": "{0}不能为空",
-		"min": "{0}不能小于{1}",
-		"max": "{0}不能大于{1}",
+		"min": "{0}的长度不能小于{1}个字符",
+		"max": "{0}的长度不能大于{1}个字符",
 	} {
 		this.RegisterTranslation(tag, message)
 	}

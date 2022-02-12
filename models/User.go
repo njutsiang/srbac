@@ -13,9 +13,9 @@ type User struct {
 	Model
 	rawPassword string
 	Id int64 `label:"ID"`
-	Name string `label:"姓名"`
-	Username string `label:"用户名" validate:"required"`
-	Password string `label:"密码" validate:"required"`
+	Name string `label:"姓名" validate:"max=32"`
+	Username string `label:"用户名" validate:"required,max=32"`
+	Password string `label:"密码" validate:"required,max=128"`
 	Status int64 `label:"状态"`
 	UpdatedAt int64 `label:"更新时间"`
 	CreatedAt int64 `label:"创建时间" validate:"required"`
