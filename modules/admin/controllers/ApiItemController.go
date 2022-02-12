@@ -7,6 +7,7 @@ import (
 	"srbac/cache"
 	"srbac/controllers"
 	"srbac/libraries/utils"
+	"srbac/logics"
 	"srbac/models"
 	"srbac/srbac"
 	"time"
@@ -36,7 +37,7 @@ func (this *ApiItemController) List(c *gin.Context) {
 	srbac.CheckError(re.Error)
 
 	models.ApiItemsLoadServices(apiItems)
-	serviceIds := models.ServiceIds()
+	serviceIds := logics.ServiceIds()
 
 	this.HTML(c, "./views/admin/api-item/list.gohtml", map[string]interface{}{
 		"menu": "api-item",
@@ -64,7 +65,7 @@ func (this *ApiItemController) Add(c *gin.Context) {
 		}
 	}
 
-	serviceIds := models.ServiceIds()
+	serviceIds := logics.ServiceIds()
 	methods := models.ApiItemMethods()
 
 	this.HTML(c, "./views/admin/api-item/add.gohtml", map[string]interface{}{
@@ -98,13 +99,15 @@ func (this *ApiItemController) Edit(c *gin.Context) {
 		apiItem.UpdatedAt = time.Now().Unix()
 		if apiItem.Validate() && apiItem.Update() {
 			cache.SetApiItem(apiItem)
+			cache.SetRoleApiItemsByApiItem(apiItem)
+			cache.SetUserApiItemsByApiItem(apiItem)
 			this.Redirect(c, referer)
 		} else {
 			this.SetFailed(c, apiItem.GetError())
 		}
 	}
 
-	serviceIds := models.ServiceIds()
+	serviceIds := logics.ServiceIds()
 	methods := models.ApiItemMethods()
 
 	this.HTML(c, "./views/admin/api-item/add.gohtml", map[string]interface{}{
@@ -119,7 +122,7 @@ func (this *ApiItemController) Edit(c *gin.Context) {
 // 删除接口节点
 func (this *ApiItemController) Delete(c *gin.Context) {
 	referer := this.GetReferer(c, "/admin/api-item/list", false)
-	id := utils.ToInt(c.Query("id"))
+	id := utils.ToInt64(c.Query("id"))
 	if id <= 0 {
 		this.Redirect(c, referer)
 	}
@@ -131,9 +134,19 @@ func (this *ApiItemController) Delete(c *gin.Context) {
 	}
 	srbac.CheckError(re.Error)
 
+	roleApiItems := []*models.RoleApiItem{}
+	re = srbac.Db.Distinct("role_id", "service_id").Where("api_item_id = ?", apiItem.Id).Find(&roleApiItems)
+	srbac.CheckError(re.Error)
+
+	userApiItems := []*models.UserApiItem{}
+	re = srbac.Db.Distinct("user_id", "service_id").Where("api_item_id = ?", apiItem.Id).Find(&userApiItems)
+	srbac.CheckError(re.Error)
+
 	re = srbac.Db.Delete(apiItem)
 	srbac.CheckError(re.Error)
 
 	cache.DelApiItem(apiItem)
+	cache.SetRoleApiItemsByRoleApiItems(roleApiItems)
+	cache.SetUserApiItemsByUserApiItems(userApiItems)
 	this.Redirect(c, referer)
 }

@@ -10,19 +10,36 @@ import (
 
 var ctx = context.Background()
 
+// 将服务保存到缓存
+func SetService(service *models.Service) {
+	old := service.GetOld()
+	if old.Key != "" && old.Key != service.Key {
+		key1 := fmt.Sprintf("auth:service:%s", old.Key)
+		_, err := srbac.Rdb.Del(ctx, key1).Result()
+		srbac.CheckError(err)
+	}
+	key2 := fmt.Sprintf("auth:service:%s", service.Key)
+	value := fmt.Sprintf("%d", service.Id)
+	_, err := srbac.Rdb.Set(ctx, key2, value, 0).Result()
+	srbac.CheckError(err)
+}
+
+// 将服务保存到缓存
+// 将服务下的所有接口节点从缓存中删除
+func DelService(service *models.Service) {
+	key1 := fmt.Sprintf("auth:service:%s", service.Key)
+	key2 := fmt.Sprintf("auth:service:%d:apis", service.Id)
+	_, err := srbac.Rdb.Del(ctx, key1, key2).Result()
+	srbac.CheckError(err)
+}
+
 // 将接口节点保存到缓存
 func SetApiItem(apiItem *models.ApiItem) {
-	if apiItem.GetService() == nil {
-		models.ApiItemsLoadServices([]*models.ApiItem{apiItem})
-		if apiItem.GetService() == nil {
-			return
-		}
-	}
 	old := apiItem.GetOld()
 	if old.Method != "" && old.Uri != "" && (old.Method != apiItem.Method || old.Uri != apiItem.Uri) {
-		delApiItem(apiItem.GetService().Id, old.Method, old.Uri)
+		delApiItem(apiItem.ServiceId, old.Method, old.Uri)
 	}
-	key := fmt.Sprintf("auth:service:%d:apis", apiItem.GetService().Id)
+	key := fmt.Sprintf("auth:service:%d:apis", apiItem.ServiceId)
 	field := fmt.Sprintf("%s%s", apiItem.Method, apiItem.Uri)
 	value := "1"
 	if apiItem.IsAnonymousAccess == 1 {
@@ -42,13 +59,6 @@ func delApiItem(serviceId int64, method string, uri string) {
 	key := fmt.Sprintf("auth:service:%d:apis", serviceId)
 	field := fmt.Sprintf("%s%s", method, uri)
 	_, err := srbac.Rdb.HDel(ctx, key, field).Result()
-	srbac.CheckError(err)
-}
-
-// 将服务下的所有接口节点从缓存中删除
-func DelService(serviceId int64) {
-	key := fmt.Sprintf("auth:service:%d:apis", serviceId)
-	_, err := srbac.Rdb.Del(ctx, key).Result()
 	srbac.CheckError(err)
 }
 
@@ -110,6 +120,34 @@ func SetRoleApiItemIds(roleId int64, serviceId int64, apiItemIds []int64) {
 	}
 }
 
+// 将角色拥有的接口节点保存到缓存
+func SetRoleApiItemsByApiItem(apiItem *models.ApiItem) {
+	old := apiItem.GetOld()
+	if old.Method != "" && old.Uri != "" && (old.Method != apiItem.Method || old.Uri != apiItem.Uri) {
+		roleApiItems := []*models.RoleApiItem{}
+		re := srbac.Db.Distinct("role_id", "service_id").Where("api_item_id = ?", apiItem.Id).Find(&roleApiItems)
+		srbac.CheckError(re.Error)
+		SetRoleApiItemsByRoleApiItems(roleApiItems)
+	}
+}
+
+// 将角色拥有的接口节点保存到缓存
+func SetRoleApiItemsByRoleApiItems(roleApiItems []*models.RoleApiItem) {
+	for _, roleApiItem := range roleApiItems {
+		currentRoleApiItems := []*models.RoleApiItem{}
+		re := srbac.Db.
+			Where("role_id = ?", roleApiItem.RoleId).
+			Where("service_id = ?", roleApiItem.ServiceId).
+			Find(&currentRoleApiItems)
+		srbac.CheckError(re.Error)
+		apiItemIds := []int64{}
+		for _, currentRoleApiItem := range currentRoleApiItems {
+			apiItemIds = append(apiItemIds, currentRoleApiItem.ApiItemId)
+		}
+		SetRoleApiItemIds(roleApiItem.RoleId, roleApiItem.ServiceId, apiItemIds)
+	}
+}
+
 // 将角色和接口节点的关系从缓存中删除
 func DelRoleApiItemsByRoleServices(roleServices []*models.RoleService) {
 	if len(roleServices) == 0 {
@@ -148,6 +186,34 @@ func SetRoleDataItemIds(roleId int64, serviceId int64, dataItemIds []int64) {
 		}
 		_, err = srbac.Rdb.SAdd(ctx, key, values).Result()
 		srbac.CheckError(err)
+	}
+}
+
+// 将角色拥有的数据节点保存到缓存
+func SetRoleDataItemsByDataItem(dataItem *models.DataItem) {
+	old := dataItem.GetOld()
+	if old.Key != "" && old.Key != dataItem.Key {
+		roleDataItems := []*models.RoleDataItem{}
+		re := srbac.Db.Distinct("role_id", "service_id").Where("data_item_id = ?", dataItem.Id).Find(&roleDataItems)
+		srbac.CheckError(re.Error)
+		SetRoleDataItemsByRoleDataItems(roleDataItems)
+	}
+}
+
+// 将角色拥有的数据节点保存到缓存
+func SetRoleDataItemsByRoleDataItems(roleDataItems []*models.RoleDataItem) {
+	for _, roleDataItem := range roleDataItems {
+		currentRoleDataItems := []*models.RoleDataItem{}
+		re := srbac.Db.
+			Where("role_id = ?", roleDataItem.RoleId).
+			Where("service_id = ?", roleDataItem.ServiceId).
+			Find(&currentRoleDataItems)
+		srbac.CheckError(re.Error)
+		dataItemIds := []int64{}
+		for _, currentRoleDataItem := range currentRoleDataItems {
+			dataItemIds = append(dataItemIds, currentRoleDataItem.DataItemId)
+		}
+		SetRoleDataItemIds(roleDataItem.RoleId, roleDataItem.ServiceId, dataItemIds)
 	}
 }
 
@@ -192,6 +258,34 @@ func SetRoleMenuItemIds(roleId int64, serviceId int64, menuItemIds []int64) {
 	}
 }
 
+// 将角色拥有的菜单节点保存到缓存
+func SetRoleMenuItemsByMenuItem(menuItem *models.MenuItem) {
+	old := menuItem.GetOld()
+	if old.Key != "" && old.Key != menuItem.Key {
+		roleMenuItems := []*models.RoleMenuItem{}
+		re := srbac.Db.Distinct("role_id", "service_id").Where("menu_item_id = ?", menuItem.Id).Find(&roleMenuItems)
+		srbac.CheckError(re.Error)
+		SetRoleMenuItemsByRoleMenuItems(roleMenuItems)
+	}
+}
+
+// 将角色拥有的菜单节点保存到缓存
+func SetRoleMenuItemsByRoleMenuItems(roleMenuItems []*models.RoleMenuItem) {
+	for _, roleMenuItem := range roleMenuItems {
+		currentRoleMenuItems := []*models.RoleMenuItem{}
+		re := srbac.Db.
+			Where("role_id = ?", roleMenuItem.RoleId).
+			Where("service_id = ?", roleMenuItem.ServiceId).
+			Find(&currentRoleMenuItems)
+		srbac.CheckError(re.Error)
+		menuItemIds := []int64{}
+		for _, currentRoleMenuItem := range currentRoleMenuItems {
+			menuItemIds = append(menuItemIds, currentRoleMenuItem.MenuItemId)
+		}
+		SetRoleMenuItemIds(roleMenuItem.RoleId, roleMenuItem.ServiceId, menuItemIds)
+	}
+}
+
 // 将角色和菜单节点的关系从缓存中删除
 func DelRoleMenuItemsByRoleServices(roleServices []*models.RoleService) {
 	if len(roleServices) == 0 {
@@ -230,6 +324,34 @@ func SetUserApiItemIds(userId int64, serviceId int64, apiItemIds []int64) {
 		}
 		_, err = srbac.Rdb.SAdd(ctx, key, values).Result()
 		srbac.CheckError(err)
+	}
+}
+
+// 将用户拥有的接口节点保存到缓存
+func SetUserApiItemsByApiItem(apiItem *models.ApiItem) {
+	old := apiItem.GetOld()
+	if old.Method != "" && old.Uri != "" && (old.Method != apiItem.Method || old.Uri != apiItem.Uri) {
+		userApiItems := []*models.UserApiItem{}
+		re := srbac.Db.Distinct("user_id", "service_id").Where("api_item_id = ?", apiItem.Id).Find(&userApiItems)
+		srbac.CheckError(re.Error)
+		SetUserApiItemsByUserApiItems(userApiItems)
+	}
+}
+
+// 将用户拥有的接口节点保存到缓存
+func SetUserApiItemsByUserApiItems(userApiItems []*models.UserApiItem) {
+	for _, userApiItem := range userApiItems {
+		currentUserApiItems := []*models.UserApiItem{}
+		re := srbac.Db.
+			Where("user_id = ?", userApiItem.UserId).
+			Where("service_id = ?", userApiItem.ServiceId).
+			Find(&currentUserApiItems)
+		srbac.CheckError(re.Error)
+		apiItemIds := []int64{}
+		for _, currentUserApiItem := range currentUserApiItems {
+			apiItemIds = append(apiItemIds, currentUserApiItem.ApiItemId)
+		}
+		SetUserApiItemIds(userApiItem.UserId, userApiItem.ServiceId, apiItemIds)
 	}
 }
 
@@ -274,6 +396,34 @@ func SetUserDataItemIds(userId int64, serviceId int64, dataItemIds []int64) {
 	}
 }
 
+// 将用户拥有的数据节点保存到缓存
+func SetUserDataItemsByDataItem(dataItem *models.DataItem) {
+	old := dataItem.GetOld()
+	if old.Key != "" && old.Key != dataItem.Key {
+		userDataItems := []*models.UserDataItem{}
+		re := srbac.Db.Distinct("user_id", "service_id").Where("data_item_id = ?", dataItem.Id).Find(&userDataItems)
+		srbac.CheckError(re.Error)
+		SetUserDataItemsByUserDataItems(userDataItems)
+	}
+}
+
+// 将用户拥有的数据节点保存到缓存
+func SetUserDataItemsByUserDataItems(userDataItems []*models.UserDataItem) {
+	for _, userDataItem := range userDataItems {
+		currentUserDataItems := []*models.UserDataItem{}
+		re := srbac.Db.
+			Where("user_id = ?", userDataItem.UserId).
+			Where("service_id = ?", userDataItem.ServiceId).
+			Find(&currentUserDataItems)
+		srbac.CheckError(re.Error)
+		dataItemIds := []int64{}
+		for _, currentUserDataItem := range currentUserDataItems {
+			dataItemIds = append(dataItemIds, currentUserDataItem.DataItemId)
+		}
+		SetUserDataItemIds(userDataItem.UserId, userDataItem.ServiceId, dataItemIds)
+	}
+}
+
 // 将用户和数据节点的关系从缓存中删除
 func DelUserDataItemsByUserServices(userServices []*models.UserService) {
 	if len(userServices) == 0 {
@@ -312,6 +462,34 @@ func SetUserMenuItemIds(userId int64, serviceId int64, menuItemIds []int64) {
 		}
 		_, err = srbac.Rdb.SAdd(ctx, key, values).Result()
 		srbac.CheckError(err)
+	}
+}
+
+// 将用户拥有的菜单节点保存到缓存
+func SetUserMenuItemsByMenuItem(menuItem *models.MenuItem) {
+	old := menuItem.GetOld()
+	if old.Key != "" && old.Key != menuItem.Key {
+		userMenuItems := []*models.UserMenuItem{}
+		re := srbac.Db.Distinct("user_id", "service_id").Where("menu_item_id = ?", menuItem.Id).Find(&userMenuItems)
+		srbac.CheckError(re.Error)
+		SetUserMenuItemsByUserMenuItems(userMenuItems)
+	}
+}
+
+// 将用户拥有的菜单节点保存到缓存
+func SetUserMenuItemsByUserMenuItems(userMenuItems []*models.UserMenuItem) {
+	for _, userMenuItem := range userMenuItems {
+		currentUserMenuItems := []*models.UserMenuItem{}
+		re := srbac.Db.
+			Where("user_id = ?", userMenuItem.UserId).
+			Where("service_id = ?", userMenuItem.ServiceId).
+			Find(&currentUserMenuItems)
+		srbac.CheckError(re.Error)
+		menuItemIds := []int64{}
+		for _, currentUserMenuItem := range currentUserMenuItems {
+			menuItemIds = append(menuItemIds, currentUserMenuItem.MenuItemId)
+		}
+		SetUserMenuItemIds(userMenuItem.UserId, userMenuItem.ServiceId, menuItemIds)
 	}
 }
 

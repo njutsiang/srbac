@@ -4,8 +4,10 @@ import (
 	"errors"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
+	"srbac/cache"
 	"srbac/controllers"
 	"srbac/libraries/utils"
+	"srbac/logics"
 	"srbac/models"
 	"srbac/srbac"
 	"time"
@@ -35,7 +37,7 @@ func (this *MenuItemController) List(c *gin.Context) {
 	srbac.CheckError(re.Error)
 
 	models.MenuItemsLoadServices(menuItems)
-	serviceIds := models.ServiceIds()
+	serviceIds := logics.ServiceIds()
 
 	this.HTML(c, "./views/admin/menu-item/list.gohtml", map[string]interface{}{
 		"menu": "menu-item",
@@ -62,7 +64,7 @@ func (this *MenuItemController) Add(c *gin.Context) {
 		}
 	}
 
-	serviceIds := models.ServiceIds()
+	serviceIds := logics.ServiceIds()
 
 	this.HTML(c, "./views/admin/menu-item/add.gohtml", map[string]interface{}{
 		"menu": "menu-item",
@@ -92,13 +94,15 @@ func (this *MenuItemController) Edit(c *gin.Context) {
 		menuItem.SetAttributes(params)
 		menuItem.UpdatedAt = time.Now().Unix()
 		if menuItem.Validate() && menuItem.Update() {
+			cache.SetRoleMenuItemsByMenuItem(menuItem)
+			cache.SetUserMenuItemsByMenuItem(menuItem)
 			this.Redirect(c, referer)
 		} else {
 			this.SetFailed(c, menuItem.GetError())
 		}
 	}
 
-	serviceIds := models.ServiceIds()
+	serviceIds := logics.ServiceIds()
 
 	this.HTML(c, "./views/admin/menu-item/add.gohtml", map[string]interface{}{
 		"menu": "menu-item",
@@ -115,7 +119,19 @@ func (this *MenuItemController) Delete(c *gin.Context) {
 	if id <= 0 {
 		this.Redirect(c, referer)
 	}
-	re :=srbac.Db.Delete(&models.MenuItem{}, id)
+
+	roleMenuItems := []*models.RoleMenuItem{}
+	re := srbac.Db.Distinct("role_id", "service_id").Where("menu_item_id = ?", id).Find(&roleMenuItems)
 	srbac.CheckError(re.Error)
+
+	userMenuItems := []*models.UserMenuItem{}
+	re = srbac.Db.Distinct("user_id", "service_id").Where("menu_item_id = ?", id).Find(&userMenuItems)
+	srbac.CheckError(re.Error)
+
+	re =srbac.Db.Delete(&models.MenuItem{}, id)
+	srbac.CheckError(re.Error)
+
+	cache.SetRoleMenuItemsByRoleMenuItems(roleMenuItems)
+	cache.SetUserMenuItemsByUserMenuItems(userMenuItems)
 	this.Redirect(c, referer)
 }

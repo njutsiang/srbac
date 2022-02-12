@@ -32,21 +32,6 @@ func NewService(data map[string]interface{}) *Service {
 	return service
 }
 
-// 所有服务 ids 枚举值
-func ServiceIds() []srbac.IntValue {
-	services := []*Service{}
-	re := srbac.Db.Order("id asc").Limit(1000).Find(&services)
-	srbac.CheckError(re.Error)
-	serviceIds := []srbac.IntValue{}
-	for _, service := range services {
-		serviceIds = append(serviceIds, srbac.IntValue{
-			Key: service.Id,
-			Value: service.Name,
-		})
-	}
-	return serviceIds
-}
-
 // 表名
 func (this *Service) TableName() string {
 	return "service"

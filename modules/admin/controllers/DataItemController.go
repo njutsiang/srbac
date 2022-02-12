@@ -4,8 +4,10 @@ import (
 	"errors"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
+	"srbac/cache"
 	"srbac/controllers"
 	"srbac/libraries/utils"
+	"srbac/logics"
 	"srbac/models"
 	"srbac/srbac"
 	"time"
@@ -35,7 +37,7 @@ func (this *DataItemController) List(c *gin.Context) {
 	srbac.CheckError(re.Error)
 
 	models.DataItemsLoadServices(dataItems)
-	serviceIds := models.ServiceIds()
+	serviceIds := logics.ServiceIds()
 
 	this.HTML(c, "./views/admin/data-item/list.gohtml", map[string]interface{}{
 		"menu": "data-item",
@@ -62,7 +64,7 @@ func (this *DataItemController) Add(c *gin.Context) {
 		}
 	}
 
-	serviceIds := models.ServiceIds()
+	serviceIds := logics.ServiceIds()
 
 	this.HTML(c, "./views/admin/data-item/add.gohtml", map[string]interface{}{
 		"menu": "data-item",
@@ -92,13 +94,15 @@ func (this *DataItemController) Edit(c *gin.Context) {
 		dataItem.SetAttributes(params)
 		dataItem.UpdatedAt = time.Now().Unix()
 		if dataItem.Validate() && dataItem.Update() {
+			cache.SetRoleDataItemsByDataItem(dataItem)
+			cache.SetUserDataItemsByDataItem(dataItem)
 			this.Redirect(c, referer)
 		} else {
 			this.SetFailed(c, dataItem.GetError())
 		}
 	}
 
-	serviceIds := models.ServiceIds()
+	serviceIds := logics.ServiceIds()
 
 	this.HTML(c, "./views/admin/data-item/add.gohtml", map[string]interface{}{
 		"menu": "data-item",
@@ -115,7 +119,19 @@ func (this *DataItemController) Delete(c *gin.Context) {
 	if id <= 0 {
 		this.Redirect(c, referer)
 	}
-	re :=srbac.Db.Delete(&models.DataItem{}, id)
+
+	roleDataItems := []*models.RoleDataItem{}
+	re := srbac.Db.Distinct("role_id", "service_id").Where("data_item_id = ?", id).Find(&roleDataItems)
 	srbac.CheckError(re.Error)
+
+	userDataItems := []*models.UserDataItem{}
+	re = srbac.Db.Distinct("user_id", "service_id").Where("data_item_id = ?", id).Find(&userDataItems)
+	srbac.CheckError(re.Error)
+
+	re =srbac.Db.Delete(&models.DataItem{}, id)
+	srbac.CheckError(re.Error)
+
+	cache.SetRoleDataItemsByRoleDataItems(roleDataItems)
+	cache.SetUserDataItemsByUserDataItems(userDataItems)
 	this.Redirect(c, referer)
 }

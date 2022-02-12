@@ -11,6 +11,9 @@ import (
 type MenuItem struct {
 	Model
 	service *Service
+	old struct {
+		Key string
+	}
 	Id int64 `label:"ID"`
 	ServiceId int64 `label:"所属服务" validate:"required"`
 	Key string `label:"菜单标识" validate:"required"`
@@ -47,6 +50,7 @@ func (this *MenuItem) SetAttributes(data map[string]interface{}) {
 	delete(data, "id")
 	delete(data, "updated_at")
 	delete(data, "created_at")
+	this.old.Key = this.Key
 	this.SetRefValue()
 	this.setAttributes(data)
 }
@@ -85,4 +89,8 @@ func (this *MenuItem) GetServiceId() int64 {
 
 func (this *MenuItem) SetService(service *Service) {
 	this.service = service
+}
+
+func (this *MenuItem) GetOld() struct{Key string} {
+	return this.old
 }

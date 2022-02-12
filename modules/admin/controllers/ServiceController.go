@@ -45,6 +45,7 @@ func (this *ServiceController) Add(c *gin.Context) {
 		params := this.GetPostForm(c)
 		service = models.NewService(params)
 		if service.Validate() && service.Create() {
+			cache.SetService(service)
 			c.Redirect(http.StatusFound, "/admin/service/list")
 			return
 		} else {
@@ -78,6 +79,7 @@ func (this *ServiceController) Edit(c *gin.Context) {
 		service.SetAttributes(params)
 		service.UpdatedAt = time.Now().Unix()
 		if service.Validate() && service.Update() {
+			cache.SetService(service)
 			this.Redirect(c, referer)
 		} else {
 			this.SetFailed(c, service.GetError())
@@ -99,8 +101,15 @@ func (this *ServiceController) Delete(c *gin.Context) {
 		this.Redirect(c, referer)
 	}
 
+	service := &models.Service{}
+	re := srbac.Db.First(service, id)
+	if errors.Is(re.Error, gorm.ErrRecordNotFound) {
+		this.Redirect(c, referer)
+	}
+	srbac.CheckError(re.Error)
+
 	roleServices := []*models.RoleService{}
-	re := srbac.Db.Where("service_id = ?", id).Find(&roleServices)
+	re = srbac.Db.Where("service_id = ?", id).Find(&roleServices)
 	srbac.CheckError(re.Error)
 
 	userServices := []*models.UserService{}
@@ -110,7 +119,7 @@ func (this *ServiceController) Delete(c *gin.Context) {
 	re = srbac.Db.Delete(&models.Service{}, id)
 	srbac.CheckError(re.Error)
 
-	cache.DelService(id)
+	cache.DelService(service)
 	cache.DelRoleApiItemsByRoleServices(roleServices)
 	cache.DelRoleDataItemsByRoleServices(roleServices)
 	cache.DelRoleMenuItemsByRoleServices(roleServices)
