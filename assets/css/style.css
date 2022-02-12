@@ -274,7 +274,7 @@ main {
 }
 .login-form {
     width: 450px;
-    padding: 30px;
+    padding: 40px;
     background: #fff;
     border-radius: .25rem;
 }
@@ -283,6 +283,11 @@ main {
 }
 .login-h1 {
     padding-top: 10px;
+}
+.login-h1 img {
+    width: 38px;
+    position: relative;
+    top: -5px;
 }
 .login-h2 {
     font-size: 20px;
