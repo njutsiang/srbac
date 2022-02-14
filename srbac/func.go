@@ -75,6 +75,8 @@ func HtmlStatus(c *gin.Context, code int, filename string, params ...map[string]
 	data["path"] = c.Request.URL.Path
 	data["sessionUserId"] = utils.ToString(session.Get("user.id"))
 	data["sessionUserName"] = utils.ToString(session.Get("user.name"))
+	data["csrfTokenKey"] = "_csrf_token"
+	data["csrfTokenValue"] = utils.ToString(session.Get("csrf.token"))
 
 	// 载入数据，并执行模板文件
 	err = tmpl.Execute(c.Writer, data)

@@ -21,6 +21,7 @@
         <div class="main-content box-shadow">
             {{if .apiItems}}
             <form method="post" action="{{.uri}}">
+                <input type="hidden" name="{{.csrfTokenKey}}" value="{{.csrfTokenValue}}" >
                 <table class="form-table">
                     <tr>
                         <td class="td1">
