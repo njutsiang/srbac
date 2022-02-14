@@ -173,12 +173,12 @@ func (this *UserServiceController) Edit(c *gin.Context) {
 
 // 删除用户服务关系
 func (this *UserServiceController) Delete(c *gin.Context) {
-	id := utils.ToInt(c.Query("id"))
-	userId := utils.ToInt(c.Query("userId"))
+	id := utils.ToInt(this.GetPostForm(c)["id"])
+	userId := utils.ToInt(this.GetPostForm(c)["userId"])
 	if id <= 0 || userId <= 0 {
 		exception.NewException(code.ParamsError)
 	}
-	referer := this.GetReferer(c, fmt.Sprintf("/admin/user-service/list?userId=%d", userId))
+	referer := this.GetReferer(c, fmt.Sprintf("/admin/user-service/list?userId=%d", userId), false)
 
 	userService := &models.UserService{}
 	re := srbac.Db.First(userService, id)

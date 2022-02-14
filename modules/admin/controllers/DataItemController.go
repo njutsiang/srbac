@@ -115,7 +115,7 @@ func (this *DataItemController) Edit(c *gin.Context) {
 // 删除数据节点
 func (this *DataItemController) Delete(c *gin.Context) {
 	referer := this.GetReferer(c, "/admin/data-item/list", false)
-	id := utils.ToInt(c.Query("id"))
+	id := utils.ToInt(this.GetPostForm(c)["id"])
 	if id <= 0 {
 		this.Redirect(c, referer)
 	}

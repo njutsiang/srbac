@@ -356,3 +356,6 @@ main {
     line-height: 26px;
     margin-bottom: 6px;
 }
+.delete-form {
+    display: inline-block;
+}

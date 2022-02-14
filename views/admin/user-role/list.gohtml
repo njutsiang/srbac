@@ -49,7 +49,12 @@
                             <td>{{.GetRole.Name}}</td>
                             <td>{{.GetCreatedAt}}</td>
                             <td>
-                                <a class="btn btn-sm btn-outline-danger no-border" href="/admin/user-role/delete?id={{.Id}}&userId={{.UserId}}">取消</a>
+                                <form class="delete-form" method="post" action="/admin/user-role/delete">
+                                    <input type="hidden" name="{{$.csrfTokenKey}}" value="{{$.csrfTokenValue}}" >
+                                    <input type="hidden" name="id" value="{{.Id}}">
+                                    <input type="hidden" name="userId" value="{{.UserId}}">
+                                    <a class="btn btn-sm btn-outline-danger no-border" href="javascript:void(0);">取消</a>
+                                </form>
                             </td>
                         </tr>
                         {{end}}

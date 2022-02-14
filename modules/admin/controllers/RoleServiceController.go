@@ -140,12 +140,12 @@ func (this *RoleServiceController) Edit(c *gin.Context) {
 
 // 删除角色服务关系
 func (this *RoleServiceController) Delete(c *gin.Context) {
-	id := utils.ToInt64(c.Query("id"))
-	roleId := utils.ToInt64(c.Query("roleId"))
+	id := utils.ToInt64(this.GetPostForm(c)["id"])
+	roleId := utils.ToInt64(this.GetPostForm(c)["roleId"])
 	if id <= 0 || roleId <= 0 {
 		exception.NewException(code.ParamsError)
 	}
-	referer := this.GetReferer(c, fmt.Sprintf("/admin/role-service/list?roleId=%d", roleId))
+	referer := this.GetReferer(c, fmt.Sprintf("/admin/role-service/list?roleId=%d", roleId), false)
 
 	roleService := &models.RoleService{}
 	re := srbac.Db.First(roleService, id)

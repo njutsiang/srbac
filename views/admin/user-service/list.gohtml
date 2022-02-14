@@ -52,7 +52,12 @@
                                 <a class="btn btn-sm btn-outline-primary no-border" href="/admin/user-api-item/edit?userServiceId={{.Id}}&userId={{.UserId}}">接口权限</a>
                                 <a class="btn btn-sm btn-outline-primary no-border" href="/admin/user-data-item/edit?userServiceId={{.Id}}&userId={{.UserId}}">数据权限</a>
                                 <a class="btn btn-sm btn-outline-primary no-border" href="/admin/user-menu-item/edit?userServiceId={{.Id}}&userId={{.UserId}}">菜单权限</a>
-                                <a class="btn btn-sm btn-outline-danger no-border {{if InSlice .ServiceId $.roleServiceIds}}disabled{{end}}" href="/admin/user-service/delete?id={{.Id}}&userId={{.UserId}}">取消</a>
+                                <form class="delete-form" method="post" action="/admin/user-service/delete">
+                                    <input type="hidden" name="{{$.csrfTokenKey}}" value="{{$.csrfTokenValue}}" >
+                                    <input type="hidden" name="id" value="{{.Id}}">
+                                    <input type="hidden" name="userId" value="{{.UserId}}">
+                                    <a class="btn btn-sm btn-outline-danger no-border {{if InSlice .ServiceId $.roleServiceIds}}disabled{{end}}" href="javascript:void(0);">取消</a>
+                                </form>
                             </td>
                         </tr>
                         {{end}}

@@ -96,7 +96,7 @@ func (this *ServiceController) Edit(c *gin.Context) {
 // 删除服务
 func (this *ServiceController) Delete(c *gin.Context) {
 	referer := this.GetReferer(c, "/admin/service/list", false)
-	id := utils.ToInt64(c.Query("id"))
+	id := utils.ToInt64(this.GetPostForm(c)["id"])
 	if id <= 0 {
 		this.Redirect(c, referer)
 	}

@@ -122,7 +122,7 @@ func (this *ApiItemController) Edit(c *gin.Context) {
 // 删除接口节点
 func (this *ApiItemController) Delete(c *gin.Context) {
 	referer := this.GetReferer(c, "/admin/api-item/list", false)
-	id := utils.ToInt64(c.Query("id"))
+	id := utils.ToInt64(this.GetPostForm(c)["id"])
 	if id <= 0 {
 		this.Redirect(c, referer)
 	}

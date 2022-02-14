@@ -130,12 +130,12 @@ func (this *UserRoleController) Edit(c *gin.Context) {
 
 // 删除用户角色关系
 func (this *UserRoleController) Delete(c *gin.Context) {
-	id := utils.ToInt64(c.Query("id"))
-	userId := utils.ToInt64(c.Query("userId"))
+	id := utils.ToInt64(this.GetPostForm(c)["id"])
+	userId := utils.ToInt64(this.GetPostForm(c)["userId"])
 	if id <= 0 || userId <= 0 {
 		exception.NewException(code.ParamsError)
 	}
-	referer := this.GetReferer(c, fmt.Sprintf("/admin/user-role/list?userId=%d", userId))
+	referer := this.GetReferer(c, fmt.Sprintf("/admin/user-role/list?userId=%d", userId), false)
 	re := srbac.Db.Delete(&models.UserRole{}, id)
 	srbac.CheckError(re.Error)
 	cache.SetUserRoles(userId)

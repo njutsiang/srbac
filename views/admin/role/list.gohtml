@@ -46,7 +46,11 @@
                             <td>
                                 <a class="btn btn-sm btn-outline-primary no-border" href="/admin/role-service/list?roleId={{.Id}}">权限</a>
                                 <a class="btn btn-sm btn-outline-primary no-border" href="/admin/role/edit?id={{.Id}}">编辑</a>
-                                <a class="btn btn-sm btn-outline-danger no-border" href="/admin/role/delete?id={{.Id}}">删除</a>
+                                <form class="delete-form" method="post" action="/admin/role/delete">
+                                    <input type="hidden" name="{{$.csrfTokenKey}}" value="{{$.csrfTokenValue}}" >
+                                    <input type="hidden" name="id" value="{{.Id}}">
+                                    <a class="btn btn-sm btn-outline-danger no-border" href="javascript:void(0);">删除</a>
+                                </form>
                             </td>
                         </tr>
                         {{end}}

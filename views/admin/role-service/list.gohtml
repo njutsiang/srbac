@@ -47,7 +47,12 @@
                                 <a class="btn btn-sm btn-outline-primary no-border" href="/admin/role-api-item/edit?roleServiceId={{.Id}}&roleId={{.RoleId}}">接口权限</a>
                                 <a class="btn btn-sm btn-outline-primary no-border" href="/admin/role-data-item/edit?roleServiceId={{.Id}}&roleId={{.RoleId}}">数据权限</a>
                                 <a class="btn btn-sm btn-outline-primary no-border" href="/admin/role-menu-item/edit?roleServiceId={{.Id}}&roleId={{.RoleId}}">菜单权限</a>
-                                <a class="btn btn-sm btn-outline-danger no-border" href="/admin/role-service/delete?roleId={{.RoleId}}&id={{.Id}}">取消</a>
+                                <form class="delete-form" method="post" action="/admin/role-service/delete">
+                                    <input type="hidden" name="{{$.csrfTokenKey}}" value="{{$.csrfTokenValue}}" >
+                                    <input type="hidden" name="id" value="{{.Id}}">
+                                    <input type="hidden" name="roleId" value="{{.RoleId}}">
+                                    <a class="btn btn-sm btn-outline-danger no-border" href="javascript:void(0);">取消</a>
+                                </form>
                             </td>
                         </tr>
                         {{end}}

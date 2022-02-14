@@ -95,7 +95,7 @@ func (this *RoleController) Edit(c *gin.Context) {
 // 删除角色
 func (this *RoleController) Delete(c *gin.Context) {
 	referer := this.GetReferer(c, "/admin/role/list", false)
-	id := utils.ToInt64(c.Query("id"))
+	id := utils.ToInt64(this.GetPostForm(c)["id"])
 	if id <= 0 {
 		this.Redirect(c, referer)
 	}
