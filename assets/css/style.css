@@ -295,3 +295,11 @@ main {
     font-size: 20px;
     margin-bottom: 30px;
 }
+.no-data {
+    padding: 20px;
+    text-align: center;
+    color: #bbb;
+}
+.no-data-icon {
+    font-size: 50px;
+}

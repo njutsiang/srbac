@@ -19,6 +19,7 @@
             </div>
         </div>
         <div class="main-content box-shadow">
+            {{if .menuItems}}
             <form method="post" action="{{.uri}}">
                 <table class="form-table">
                     <tr>
@@ -39,6 +40,12 @@
                     </tr>
                 </table>
             </form>
+            {{else}}
+            <div class="no-data">
+                <div class="no-data-icon"><i class="bi-file-earmark-x"></i></div>
+                <div class="no-data-text">暂无数据</div>
+            </div>
+            {{end}}
         </div>
     </div>
 </main>
