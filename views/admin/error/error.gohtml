@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    {{template "head" .}}
+</head>
+<body>
+<div class="error-container">
+    <div class="error-main">
+        <div class="error-header">
+            <img src="/assets/img/logo.png" alt="" />
+            <span>SRBAC</span>
+        </div>
+        <div class="error-content box-shadow">
+            <div class="error-message">{{.message}}</div>
+            <div class="error-code">错误码：{{.code}}</div>
+            <div class="error-links">
+                <a href="/admin">返回首页</a>
+                <a href="{{.referer}}">返回上一个页面</a>
+            </div>
+        </div>
+    </div>
+</div>
+{{template "footer" .}}
+</body>
+</html>

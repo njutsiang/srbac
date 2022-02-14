@@ -1,9 +1,7 @@
 package controllers
 
 import (
-	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
-	"html/template"
 	"io/ioutil"
 	"mime/multipart"
 	"net/http"
@@ -12,7 +10,6 @@ import (
 	"srbac/libraries/utils"
 	"srbac/models"
 	"srbac/srbac"
-	"strings"
 )
 
 // 控制器基类
@@ -21,70 +18,7 @@ type Controller struct {
 
 // 输出 HTML
 func (this *Controller) HTML(ctx *gin.Context, filename string, params ...map[string]interface{}) {
-	this.HtmlStatus(ctx, http.StatusOK, filename, params...)
-}
-
-// 输出 HTML，并指定 Http 状态码
-func (this *Controller) HtmlStatus(ctx *gin.Context, code int, filename string, params ...map[string]interface{}) {
-	session := sessions.Default(ctx)
-
-	// 响应状态和响应头
-	ctx.Status(code)
-	ctx.Header("Content-Type", "text/html; charset=utf-8")
-
-	// 所有模板文件
-	filenames := []string{"",
-		"./views/admin/layout/head.gohtml",
-		"./views/admin/layout/header.gohtml",
-		"./views/admin/layout/menu.gohtml",
-		"./views/admin/layout/footer.gohtml",
-	}
-	copy(filenames, []string{
-		filename,
-	})
-
-	// 主模板文件
-	filenameItems := strings.Split(filename, "/")
-	filenameItem := filenameItems[len(filenameItems) - 1]
-
-	// 向模板注册自定义函数
-	tmpl := template.New(filenameItem).Funcs(template.FuncMap{
-		"InSlice": utils.InSlice,
-	})
-
-	// 解析所有模板
-	tmpl, err := tmpl.ParseFiles(filenames...)
-	if err != nil {
-		log.Error(err)
-		ctx.Status(http.StatusNotFound)
-		if _, err := ctx.Writer.Write([]byte(err.Error())); err != nil {
-			log.Error(err)
-		}
-		return
-	}
-
-	// 处理数据和页面标题
-	data := map[string]interface{}{}
-	if len(params) >= 1 {
-		data = params[0]
-	}
-	title := utils.ToString(data["title"])
-	data["title"] = title
-	data["failed"] = template.HTML(this.GetFailed(ctx))
-	data["success"] = template.HTML(this.GetSuccess(ctx))
-	data["uri"] = ctx.Request.URL.RequestURI()
-	if len(title) >= 1 {
-		title += " - "
-	}
-	title += "SRBAC 基于服务和角色的访问控制"
-	data["headTitle"] = title
-	data["path"] = ctx.Request.URL.Path
-	data["sessionUserId"] = utils.ToString(session.Get("user.id"))
-	data["sessionUserName"] = utils.ToString(session.Get("user.name"))
-
-	// 载入数据，并执行模板文件
-	err = tmpl.Execute(ctx.Writer, data)
-	srbac.CheckError(err)
+	srbac.HtmlStatus(ctx, http.StatusOK, filename, params...)
 }
 
 // 获取 POST 表单数据
