@@ -21,11 +21,11 @@ type UserRoleController struct {
 
 // 用户角色关系列表
 func (this *UserRoleController) List(c *gin.Context) {
-	userId := utils.ToInt(c.Query("userId"))
-	if userId <= 0 {
-		exception.NewException(code.ParamsError)
-	}
 	referer := "/admin/user/list"
+	userId := utils.ToInt(c.Query("userId"))
+	if userId <= 1 {
+		this.Redirect(c, referer)
+	}
 
 	params := c.Request.URL.Query()
 	page, perPage := utils.GetPageInfo(params)

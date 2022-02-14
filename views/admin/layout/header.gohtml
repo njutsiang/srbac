@@ -18,10 +18,9 @@
     <div class="header-split"></div>
     <div class="header-title">SRBAC 基于服务和角色的访问控制</div>
     <div class="dropdown user-info">
-        <a class="dropdown-toggle user-name" data-bs-toggle="dropdown" href="javascript:void(0);">刘强</a>
+        <a class="dropdown-toggle user-name" data-bs-toggle="dropdown" href="javascript:void(0);">{{.sessionUserName}}</a>
         <ul class="dropdown-menu dropdown-menu-lg-end box-shadow">
-            <li><a class="dropdown-item" href="#"><i class="bi-person"></i> 个人信息</a></li>
-            <li><a class="dropdown-item" href="#"><i class="bi-key"></i> 修改密码</a></li>
+            <li><a class="dropdown-item" href="/admin/user/edit?id={{.sessionUserId}}"><i class="bi-person"></i> 个人信息</a></li>
             <li><hr class="dropdown-divider"></li>
             <li><a class="dropdown-item" href="/admin/logout"><i class="bi-box-arrow-right"></i> 退出登录</a></li>
         </ul>

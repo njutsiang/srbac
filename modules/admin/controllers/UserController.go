@@ -98,7 +98,7 @@ func (this *UserController) Edit(c *gin.Context) {
 func (this *UserController) Delete(c *gin.Context) {
 	referer := this.GetReferer(c, "/admin/user/list", false)
 	id := utils.ToInt64(c.Query("id"))
-	if id <= 0 {
+	if id <= 1 {
 		this.Redirect(c, referer)
 	}
 

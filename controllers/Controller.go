@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"html/template"
 	"io/ioutil"
@@ -25,6 +26,8 @@ func (this *Controller) HTML(ctx *gin.Context, filename string, params ...map[st
 
 // 输出 HTML，并指定 Http 状态码
 func (this *Controller) HtmlStatus(ctx *gin.Context, code int, filename string, params ...map[string]interface{}) {
+	session := sessions.Default(ctx)
+
 	// 响应状态和响应头
 	ctx.Status(code)
 	ctx.Header("Content-Type", "text/html; charset=utf-8")
@@ -76,6 +79,8 @@ func (this *Controller) HtmlStatus(ctx *gin.Context, code int, filename string, 
 	title += "SRBAC 基于服务和角色的访问控制"
 	data["headTitle"] = title
 	data["path"] = ctx.Request.URL.Path
+	data["sessionUserId"] = utils.ToString(session.Get("user.id"))
+	data["sessionUserName"] = utils.ToString(session.Get("user.name"))
 
 	// 载入数据，并执行模板文件
 	err = tmpl.Execute(ctx.Writer, data)

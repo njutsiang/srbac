@@ -22,11 +22,11 @@ type UserServiceController struct {
 
 // 用户服务关系列表
 func (this *UserServiceController) List(c *gin.Context) {
-	userId := utils.ToInt64(c.Query("userId"))
-	if userId <= 0 {
-		exception.NewException(code.ParamsError)
-	}
 	referer := "/admin/user/list"
+	userId := utils.ToInt64(c.Query("userId"))
+	if userId <= 1 {
+		this.Redirect(c, referer)
+	}
 
 	params := c.Request.URL.Query()
 	page, perPage := utils.GetPageInfo(params)

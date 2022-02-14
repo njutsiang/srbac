@@ -22,7 +22,7 @@
             <form method="post" action="{{.uri}}">
                 <table class="form-table">
                     <tr>
-                        <td class="td1">
+                        <td class="td1" style="width: 180px;">
                             <label for="username" class="form-label">用户名</label>
                         </td>
                         <td>
@@ -43,6 +43,9 @@
                         </td>
                         <td>
                             <input type="text" id="password" name="password" class="form-control" {{if .user.Password}}value="{{.user.RawPassword}}"{{end}} placeholder="请输入">
+                            {{if .user.Id}}
+                            <div class="form-text">留空表示保持原密码不变，如需修改请输入新密码</div>
+                            {{end}}
                         </td>
                     </tr>
                     <tr>

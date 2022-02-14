@@ -251,9 +251,11 @@ main {
     text-align: right;
     padding: 0 20px 0 0;
     line-height: 38px;
+    vertical-align: top;
 }
 .form-table .td1 .form-label {
     margin-bottom: 0;
+    line-height: 58px;
 }
 .form-table td {
     padding: 10px 0;
