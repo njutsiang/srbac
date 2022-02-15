@@ -9,11 +9,13 @@ import (
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
+	"net/http"
 	"srbac/cache"
 	"srbac/controllers"
 	"srbac/libraries/utils"
 	"srbac/models"
 	"srbac/srbac"
+	"time"
 )
 
 type LoginController struct {
@@ -81,6 +83,13 @@ func (this *LoginController) Login(c *gin.Context) {
 				session.Set("user.status", user.Status)
 				session.Set("user.token", token)
 				if err := session.Save(); err == nil {
+					http.SetCookie(c.Writer, &http.Cookie{
+						Name: "user_token",
+						Value: token,
+						Expires: time.Unix(time.Now().Unix() + int64(maxAge), 0),
+						MaxAge: maxAge,
+						Path: "/",
+					})
 					this.Redirect(c, "/admin")
 				} else {
 					hasErr = true
@@ -108,5 +117,9 @@ func (this *LoginController) Logout(c *gin.Context) {
 	session.Delete("user.token")
 	err := session.Save()
 	srbac.CheckError(err)
+	http.SetCookie(c.Writer, &http.Cookie{
+		Name: "user_token",
+		MaxAge: -1,
+	})
 	this.Redirect(c, "/admin/login")
 }
