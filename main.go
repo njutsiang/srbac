@@ -18,6 +18,8 @@ func main() {
 	srbac.Engine.Use(middlewares.ErrorHandle)
 	srbac.Engine.Use(middlewares.SessionHandle)
 	srbac.Engine.Use(middlewares.CsrfHandle)
+	srbac.Engine.NoMethod(middlewares.NotFoundHandle)
+	srbac.Engine.NoRoute(middlewares.NotFoundHandle)
 
 	// 配置路由
 	routers.SetRouters(srbac.Engine)
