@@ -22,7 +22,6 @@
             <div class="main-top">
                 <div class="main-top-left">
                     <form class="main-auto-search-form" method="get">
-                        <input type="hidden" name="{{.csrfTokenKey}}" value="{{.csrfTokenValue}}" >
                         <select name="serviceId" class="form-select" style="width:220px;">
                             <option value="">-所有-</option>
                             {{range .serviceIds}}

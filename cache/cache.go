@@ -2,10 +2,12 @@ package cache
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"srbac/libraries/utils"
 	"srbac/models"
 	"srbac/srbac"
+	"time"
 )
 
 var ctx = context.Background()
@@ -88,8 +90,10 @@ func setUserRoleIds(userId int64, values []string) {
 	key := fmt.Sprintf("auth:user:%d:roles", userId)
 	_, err := srbac.Rdb.Del(ctx, key).Result()
 	srbac.CheckError(err)
-	_, err = srbac.Rdb.SAdd(ctx, key, values).Result()
-	srbac.CheckError(err)
+	if len(values) >= 1 {
+		_, err = srbac.Rdb.SAdd(ctx, key, values).Result()
+		srbac.CheckError(err)
+	}
 }
 
 // 将用户与角色的关系从缓存中删除
@@ -115,8 +119,10 @@ func SetRoleApiItemIds(roleId int64, serviceId int64, apiItemIds []int64) {
 		for _, apiItem := range apiItems {
 			values = append(values, fmt.Sprintf("%s%s", apiItem.Method, apiItem.Uri))
 		}
-		_, err = srbac.Rdb.SAdd(ctx, key, values).Result()
-		srbac.CheckError(err)
+		if len(values) >= 1 {
+			_, err = srbac.Rdb.SAdd(ctx, key, values).Result()
+			srbac.CheckError(err)
+		}
 	}
 }
 
@@ -184,8 +190,10 @@ func SetRoleDataItemIds(roleId int64, serviceId int64, dataItemIds []int64) {
 		for _, dataItem := range dataItems {
 			values = append(values, dataItem.Key)
 		}
-		_, err = srbac.Rdb.SAdd(ctx, key, values).Result()
-		srbac.CheckError(err)
+		if len(values) >= 1 {
+			_, err = srbac.Rdb.SAdd(ctx, key, values).Result()
+			srbac.CheckError(err)
+		}
 	}
 }
 
@@ -253,8 +261,10 @@ func SetRoleMenuItemIds(roleId int64, serviceId int64, menuItemIds []int64) {
 		for _, menuItem := range menuItems {
 			values = append(values, menuItem.Key)
 		}
-		_, err = srbac.Rdb.SAdd(ctx, key, values).Result()
-		srbac.CheckError(err)
+		if len(values) >= 1 {
+			_, err = srbac.Rdb.SAdd(ctx, key, values).Result()
+			srbac.CheckError(err)
+		}
 	}
 }
 
@@ -322,8 +332,10 @@ func SetUserApiItemIds(userId int64, serviceId int64, apiItemIds []int64) {
 		for _, apiItem := range apiItems {
 			values = append(values, fmt.Sprintf("%s%s", apiItem.Method, apiItem.Uri))
 		}
-		_, err = srbac.Rdb.SAdd(ctx, key, values).Result()
-		srbac.CheckError(err)
+		if len(values) >= 1 {
+			_, err = srbac.Rdb.SAdd(ctx, key, values).Result()
+			srbac.CheckError(err)
+		}
 	}
 }
 
@@ -391,8 +403,10 @@ func SetUserDataItemIds(userId int64, serviceId int64, dataItemIds []int64) {
 		for _, dataItem := range dataItems {
 			values = append(values, dataItem.Key)
 		}
-		_, err = srbac.Rdb.SAdd(ctx, key, values).Result()
-		srbac.CheckError(err)
+		if len(values) >= 1 {
+			_, err = srbac.Rdb.SAdd(ctx, key, values).Result()
+			srbac.CheckError(err)
+		}
 	}
 }
 
@@ -460,8 +474,10 @@ func SetUserMenuItemIds(userId int64, serviceId int64, menuItemIds []int64) {
 		for _, menuItem := range menuItems {
 			values = append(values, menuItem.Key)
 		}
-		_, err = srbac.Rdb.SAdd(ctx, key, values).Result()
-		srbac.CheckError(err)
+		if len(values) >= 1 {
+			_, err = srbac.Rdb.SAdd(ctx, key, values).Result()
+			srbac.CheckError(err)
+		}
 	}
 }
 
@@ -509,6 +525,26 @@ func DelUserMenuItemsByUserServices(userServices []*models.UserService) {
 // 将用户和菜单节点的关系从缓存中删除
 func DelUserMenuItemsByUserService(userService *models.UserService) {
 	key := fmt.Sprintf("auth:user:%d:service:%d:menus", userService.UserId, userService.ServiceId)
+	_, err := srbac.Rdb.Del(ctx, key).Result()
+	srbac.CheckError(err)
+}
+
+// 保存用户 Token 到缓存
+func SetUserToken(token string, user *models.User, expiration int) {
+	key := fmt.Sprintf("user:token:%s", token)
+	value, _ := json.Marshal(map[string]interface{}{
+		"id": user.Id,
+		"name": srbac.AsciiString(user.Name),
+		"username": user.Username,
+		"status": user.Status,
+	})
+	_, err := srbac.Rdb.SetEX(ctx, key, value, time.Second * time.Duration(expiration)).Result()
+	srbac.CheckError(err)
+}
+
+// 将用户 Token 从缓存中删除
+func DelUserToken(token string) {
+	key := fmt.Sprintf("user:token:%s", token)
 	_, err := srbac.Rdb.Del(ctx, key).Result()
 	srbac.CheckError(err)
 }

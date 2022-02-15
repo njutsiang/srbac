@@ -1,5 +1,7 @@
 package srbac
 
+import "strconv"
+
 // Key 为整数的枚举值
 type IntValue struct {
 	Key int64
@@ -40,4 +42,12 @@ func (items Sortables) SortBy(values []int64) Sortables {
 		}
 	}
 	return data
+}
+
+// 在 json.Marshal() 的时候，将字符串转为 Ascii
+type AsciiString string
+
+// 实现 json.Marshaler
+func (s AsciiString) MarshalJSON() ([]byte, error) {
+	return []byte(strconv.QuoteToASCII(string(s))), nil
 }

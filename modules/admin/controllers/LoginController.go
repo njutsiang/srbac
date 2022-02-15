@@ -1,11 +1,15 @@
 package admin
 
 import (
+	"crypto/md5"
 	"errors"
+	"fmt"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
+	"srbac/cache"
 	"srbac/controllers"
 	"srbac/libraries/utils"
 	"srbac/models"
@@ -68,10 +72,14 @@ func (this *LoginController) Login(c *gin.Context) {
 				this.SetFailed(c, "密码错误")
 			}
 			if !hasErr {
+				token := uuid.NewString()
+				token = fmt.Sprintf("%x", md5.Sum([]byte(token)))
+				cache.SetUserToken(token, user, maxAge)
 				session.Set("user.id", user.Id)
 				session.Set("user.name", user.Name)
 				session.Set("user.username", user.Username)
 				session.Set("user.status", user.Status)
+				session.Set("user.token", token)
 				if err := session.Save(); err == nil {
 					this.Redirect(c, "/admin")
 				} else {
@@ -91,6 +99,13 @@ func (this *LoginController) Login(c *gin.Context) {
 func (this *LoginController) Logout(c *gin.Context) {
 	session := sessions.Default(c)
 	session.Delete("user.id")
+	session.Delete("user.name")
+	session.Delete("user.username")
+	session.Delete("user.status")
+	if token := session.Get("user.token"); token != nil {
+		cache.DelUserToken(utils.ToString(token))
+	}
+	session.Delete("user.token")
 	err := session.Save()
 	srbac.CheckError(err)
 	this.Redirect(c, "/admin/login")
