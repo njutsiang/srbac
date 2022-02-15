@@ -84,8 +84,8 @@ local function get_uri(ctx)
 end
 
 -- 判断指定角色对指定接口是否有权限
-local function is_role_has_permission(red, role, service, method, uri)
-    local key = "auth:role:" .. role .. ":service:" .. service .. ":apis"
+local function is_role_has_permission(red, role, service_id, method, uri)
+    local key = "auth:role:" .. role .. ":service:" .. service_id .. ":apis"
     if red:sismember(key, method .. uri) == 1 then
         return true
     end
@@ -93,8 +93,8 @@ local function is_role_has_permission(red, role, service, method, uri)
 end
 
 -- 判断指定用户对指定接口是否有权限
-local function is_user_has_permission(red, user_id, service, method, uri)
-    local key = "auth:user:" .. user_id .. ":service:" .. service .. ":apis"
+local function is_user_has_permission(red, user_id, service_id, method, uri)
+    local key = "auth:user:" .. user_id .. ":service:" .. service_id .. ":apis"
     if red:sismember(key, method .. uri) == 1 then
         return true
     end
@@ -113,25 +113,24 @@ local function get_roles(red, user_id)
 end
 
 -- 没有权限
-local function is_has_permission(ctx, red, roles)
+local function is_has_permission(ctx, red, roles, service_id)
     local user_id = ctx.user_id
-    local service = ctx.var.upstream_host
     local method = ngx.req.get_method()
     local uri = get_uri(ctx)
     for _, role in ipairs(roles) do
-        if is_role_has_permission(red, role, service, method, uri) then
+        if is_role_has_permission(red, role, service_id, method, uri) then
             return true
         end
     end
-    if is_user_has_permission(red, user_id, service, method, uri) then
+    if is_user_has_permission(red, user_id, service_id, method, uri) then
         return true
     end
     return false
 end
 
 -- 获取角色拥有的数据权限节点
-local function get_auth_items_by_role(red, role, service)
-    local key = "auth:role:" .. role .. ":service:" .. service .. ":items"
+local function get_auth_items_by_role(red, role, service_id)
+    local key = "auth:role:" .. role .. ":service:" .. service_id .. ":items"
     local auth_items = red:smembers(key);
     if auth_items then
         return auth_items
@@ -141,8 +140,8 @@ local function get_auth_items_by_role(red, role, service)
 end
 
 -- 获取用户拥有的数据权限节点
-local function get_auth_items_by_user_id(red, user_id, service)
-    local key = "auth:user:" .. user_id .. ":service:" .. service .. ":items"
+local function get_auth_items_by_user_id(red, user_id, service_id)
+    local key = "auth:user:" .. user_id .. ":service:" .. service_id .. ":items"
     local auth_items = red:smembers(key);
     if auth_items then
         return auth_items
@@ -152,16 +151,16 @@ local function get_auth_items_by_user_id(red, user_id, service)
 end
 
 -- 获取角色和用户拥有的数据权限节点
-local function get_auth_items(red, user_id, roles, service)
+local function get_auth_items(red, user_id, roles, service_id)
     local auth_items = {}
     local _auth_items = {}
     for _, role in ipairs(roles) do
-        _auth_items = get_auth_items_by_role(red, role, service)
+        _auth_items = get_auth_items_by_role(red, role, service_id)
         for _, auth_item in ipairs(_auth_items) do
             auth_items[auth_item] = 1
         end
     end
-    _auth_items = get_auth_items_by_user_id(red, user_id, service)
+    _auth_items = get_auth_items_by_user_id(red, user_id, service_id)
     for _, auth_item in ipairs(_auth_items) do
         auth_items[auth_item] = 1
     end
@@ -208,37 +207,54 @@ function _M.access(conf, ctx)
         return ""
     end
 
+    -- 判断服务是否存在
+    -- ctx.var.upstream_host 是经过 proxy-rewrite 重写后的 host
+    local service_key = "auth:service:" .. ctx.var.upstream_host
+    local service_id, service_err = red:get(service_key)
+    if not service_id then
+        core.log.error("从 Redis 读取服务失败: ", service_err)
+        return get_response_404()
+    end
+
     -- 判断接口是否存在
-    local key = "auth:service:" .. ctx.var.upstream_host .. ":apis"
     local uri = get_uri(ctx)
-    local data = red:hget(key, ngx.req.get_method() .. uri)
-    if not (type(data) == "string" and (data == "1" or data == "0")) then
-        data = red:hget(key, "*" .. uri)
-        if not (type(data) == "string" and (data == "1" or data == "0")) then
+    local uri_key = "auth:service:" .. service_id .. ":apis"
+    local is_uri_exist = red:hget(uri_key, ngx.req.get_method() .. uri)
+
+    if not (type(is_uri_exist) == "string" and (is_uri_exist == "1" or is_uri_exist == "0")) then
+        is_uri_exist = red:hget(uri_key, "*" .. uri)
+        if not (type(is_uri_exist) == "string" and (is_uri_exist == "1" or is_uri_exist == "0")) then
             return get_response_404()
         end
     end
 
     -- 如果接口是需要鉴权的
-    if data == "1" then
+    if is_uri_exist == "1" then
 
         -- 判断用户是否已登录
         if not ctx.user_id then
             return get_response_401()
         end
 
-        -- 查询用户拥有的角色
-        local roles = get_roles(red, ctx.user_id)
+        -- 判断是否是超级用户
+        if ctx.user_id ~= "1" then
 
-        -- 判断用户是否有权限
-        if not is_has_permission(ctx, red, roles) then
-            return get_response_403()
+            -- 查询用户拥有的角色
+            local roles = get_roles(red, ctx.user_id)
+
+            -- 判断用户是否有权限
+            if not is_has_permission(ctx, red, roles, service_id) then
+                return get_response_403()
+            end
+
+            -- 将用户拥有的数据权限节点写入到请求头
+            local auth_items = get_auth_items(red, ctx.user_id, roles, service_id)
+            local auth_items_json = "[]"
+            if table.getn(auth_items) >= 1 then
+                auth_items_json = core.json.encode(auth_items, true)
+            end
+            core.response.set_header("X-User-Auth-Items", auth_items_json)
         end
-
-        -- 将用户拥有的数据权限节点写入到请求头
-        local service = ctx.var.upstream_host
-        local auth_items = get_auth_items(red, ctx.user_id, roles, service)
-        core.response.set_header("X-User-Auth-Items", core.json.encode(auth_items, true))
     end
 
     -- 将当前 Redis 连接放入连接池
