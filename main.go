@@ -1,6 +1,7 @@
 package main
 
 import (
+	"srbac/check"
 	"srbac/middlewares"
 	"srbac/routers"
 	"srbac/srbac"
@@ -23,6 +24,9 @@ func main() {
 
 	// 配置路由
 	routers.SetRouters(srbac.Engine)
+
+	// 检查初始化数据
+	check.InitSrbacData()
 
 	// 启动端口
 	err := srbac.Engine.Run(":8102")

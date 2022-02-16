@@ -8,6 +8,7 @@ var (
 	CsrfTokenError Code = 400001
 	UserNotLogin Code = 401000
 	UserNotExists Code = 404001
+	InternalError Code = 500000
 	UnknownModelFieldType Code = 500100
 )
 
@@ -17,6 +18,7 @@ var messages = map[Code]string{
 	CsrfTokenError: "表单验证失败",
 	UserNotExists: "用户不存在",
 	UserNotLogin: "用户未登录",
+	InternalError: "内部错误",
 	UnknownModelFieldType: "未知的模型字段数据类型",
 }
 

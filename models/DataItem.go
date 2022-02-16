@@ -18,6 +18,7 @@ type DataItem struct {
 	ServiceId int64 `label:"所属服务" validate:"required"`
 	Key string `label:"权限标识" validate:"required,max=32"`
 	Name string `label:"权限名称" validate:"required,max=32"`
+	Sort int64 `label:"排序值"`
 	UpdatedAt int64 `label:"更新时间"`
 	CreatedAt int64 `label:"创建时间" validate:"required"`
 }
@@ -28,6 +29,7 @@ func NewDataItem(data map[string]interface{}) *DataItem {
 		ServiceId: utils.ToInt64(data["service_id"]),
 		Key: utils.ToString(data["key"]),
 		Name: utils.ToString(data["name"]),
+		Sort: 0,
 		UpdatedAt: 0,
 		CreatedAt: time.Now().Unix(),
 	}

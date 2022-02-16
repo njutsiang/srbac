@@ -21,6 +21,7 @@ type ApiItem struct {
 	Uri string `label:"接口路由" validate:"required,max=128"`
 	Name string `label:"接口名称" validate:"max=32"`
 	IsAnonymousAccess int64 `label:"是否允许匿名文档"`
+	Sort int64 `label:"排序值"`
 	UpdatedAt int64 `label:"更新时间"`
 	CreatedAt int64 `label:"创建时间" validate:"required"`
 }
@@ -33,6 +34,7 @@ func NewApiItem(data map[string]interface{}) *ApiItem {
 		Uri: utils.ToString(data["uri"]),
 		Name: utils.ToString(data["name"]),
 		IsAnonymousAccess: utils.ToInt64(data["is_anonymous_access"]),
+		Sort: 0,
 		UpdatedAt: 0,
 		CreatedAt: time.Now().Unix(),
 	}
