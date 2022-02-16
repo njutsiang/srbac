@@ -97,7 +97,8 @@ func (this *RoleMenuItemController) Edit(c *gin.Context) {
 
 	this.HTML(c, "./views/admin/role-menu-item/edit.gohtml", map[string]interface{}{
 		"menu": "role",
-		"title": role.Name + " > " + roleService.GetServiceName(),
+		"title": role.Name,
+		"subTitle": roleService.GetServiceName(),
 		"menuItems": menuItems,
 		"menuItemIds": menuItemIds,
 	})

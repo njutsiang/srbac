@@ -10,6 +10,7 @@ import (
 	"srbac/controllers"
 	"srbac/exception"
 	"srbac/libraries/utils"
+	"srbac/logics"
 	"srbac/models"
 	"srbac/srbac"
 )
@@ -45,7 +46,7 @@ func (this *UserApiItemController) Edit(c *gin.Context) {
 	srbac.CheckError(re.Error)
 
 	apiItems := []*models.ApiItem{}
-	re = srbac.Db.Where("service_id = ?", userService.ServiceId).Order("id asc").Limit(1000).Find(&apiItems)
+	re = logics.WithApiItemsOrder(srbac.Db.Where("service_id = ?", userService.ServiceId)).Limit(1000).Find(&apiItems)
 	srbac.CheckError(re.Error)
 
 	userApiItems := []*models.UserApiItem{}
@@ -95,7 +96,8 @@ func (this *UserApiItemController) Edit(c *gin.Context) {
 
 	this.HTML(c, "./views/admin/user-api-item/edit.gohtml", map[string]interface{}{
 		"menu": "user",
-		"title": user.Name + " > " + userService.GetService().Name,
+		"title": user.Name,
+		"subTitle": userService.GetService().Name,
 		"user": user,
 		"apiItems": apiItems,
 		"apiItemIds": apiItemIds,

@@ -33,7 +33,7 @@ func (this *ApiItemController) List(c *gin.Context) {
 	srbac.CheckError(re.Error)
 
 	apiItems := []*models.ApiItem{}
-	re = find.Order("id asc").Offset((page - 1) * per_page).Limit(per_page).Find(&apiItems)
+	re = logics.WithApiItemsOrder(find).Offset((page - 1) * per_page).Limit(per_page).Find(&apiItems)
 	srbac.CheckError(re.Error)
 
 	models.ApiItemsLoadServices(apiItems)

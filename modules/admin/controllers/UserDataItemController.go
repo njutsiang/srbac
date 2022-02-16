@@ -95,7 +95,8 @@ func (this *UserDataItemController) Edit(c *gin.Context) {
 
 	this.HTML(c, "./views/admin/user-data-item/edit.gohtml", map[string]interface{}{
 		"menu": "user",
-		"title": user.Name + " > " + userService.GetService().Name,
+		"title": user.Name,
+		"subTitle": userService.GetService().Name,
 		"user": user,
 		"dataItems": dataItems,
 		"dataItemIds": dataItemIds,

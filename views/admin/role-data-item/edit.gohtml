@@ -9,13 +9,23 @@
     {{template "menu" .}}
     <div class="main-container">
         <div class="main-header">
-            <div class="main-title">{{.title}}</div>
+            <div class="main-title">
+                <span>{{.title}}</span>
+                {{if .subTitle}}
+                    <i class="bi-chevron-right"></i>
+                    <span>{{.subTitle}}</span>
+                {{end}}
+            </div>
             <div class="main-path">
                 <a href="/admin">首页</a>
                 <i class="bi-chevron-right"></i>
                 <a href="/admin/role/list">角色管理</a>
                 <i class="bi-chevron-right"></i>
                 <span>{{.title}}</span>
+                {{if .subTitle}}
+                    <i class="bi-chevron-right"></i>
+                    <span>{{.subTitle}}</span>
+                {{end}}
             </div>
         </div>
         <div class="main-content box-shadow">

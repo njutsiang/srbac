@@ -10,6 +10,7 @@ import (
 	"srbac/controllers"
 	"srbac/exception"
 	"srbac/libraries/utils"
+	"srbac/logics"
 	"srbac/models"
 	"srbac/srbac"
 )
@@ -45,7 +46,7 @@ func (this *RoleApiItemController) Edit(c *gin.Context) {
 	srbac.CheckError(re.Error)
 
 	apiItems := []*models.ApiItem{}
-	re = srbac.Db.Where("service_id = ?", roleService.ServiceId).Order("uri asc").Limit(1000).Find(&apiItems)
+	re = logics.WithApiItemsOrder(srbac.Db.Where("service_id = ?", roleService.ServiceId)).Limit(1000).Find(&apiItems)
 	srbac.CheckError(re.Error)
 
 	// 角色和接口节点的关联
@@ -97,7 +98,8 @@ func (this *RoleApiItemController) Edit(c *gin.Context) {
 
 	this.HTML(c, "./views/admin/role-api-item/edit.gohtml", map[string]interface{}{
 		"menu": "role",
-		"title": role.Name + " > " + roleService.GetServiceName(),
+		"title": role.Name,
+		"subTitle": roleService.GetServiceName(),
 		"apiItems": apiItems,
 		"apiItemIds": apiItemIds,
 	})
