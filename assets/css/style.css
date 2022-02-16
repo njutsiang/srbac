@@ -238,6 +238,7 @@ main {
     text-align: left;
     position: relative;
     padding: 1rem 6rem 1rem 2.5rem;
+    z-index: 999;
 }
 .top-notice .alert i {
     position: absolute;
