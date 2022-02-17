@@ -25,7 +25,7 @@ type ConfigYaml struct {
 		Password string
 		Db int
 	}
-	Session struct{
+	Cookie struct{
 		Key string
 	}
 }

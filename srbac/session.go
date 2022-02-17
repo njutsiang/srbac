@@ -13,7 +13,7 @@ func InitSession() {
 		Config.Redis.Host + ":" + Config.Redis.Port,
 		Config.Redis.Password,
 		fmt.Sprintf("%d", Config.Redis.Db),
-		[]byte(Config.Session.Key))
+		[]byte(Config.Cookie.Key))
 	CheckError(err)
 	Engine.Use(sessions.Sessions("srbac_session_id", store))
 }
