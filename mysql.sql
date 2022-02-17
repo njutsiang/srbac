@@ -1,5 +1,3 @@
--- noinspection SqlDialectInspectionForFile
-
 /*
 SQLyog Community v13.1.9 (64 bit)
 MySQL - 5.7.27 : Database - srbac
@@ -22,6 +20,7 @@ CREATE TABLE `api_item` (
   `uri` varchar(128) NOT NULL COMMENT '接口路由',
   `name` varchar(32) NOT NULL COMMENT '接口名称',
   `is_anonymous_access` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '是否允许匿名文档：1=允许，0=不允许',
+  `sort` int(10) unsigned NOT NULL DEFAULT '0' COMMENT '排序值',
   `updated_at` int(10) unsigned NOT NULL DEFAULT '0' COMMENT '更新时间',
   `created_at` int(10) unsigned NOT NULL COMMENT '创建时间',
   PRIMARY KEY (`id`),
@@ -36,6 +35,7 @@ CREATE TABLE `data_item` (
   `service_id` int(10) unsigned NOT NULL COMMENT '服务 id',
   `key` varchar(32) NOT NULL COMMENT '权限标识',
   `name` varchar(32) NOT NULL COMMENT '权限名称',
+  `sort` int(10) unsigned NOT NULL DEFAULT '0' COMMENT '排序值',
   `updated_at` int(10) unsigned NOT NULL DEFAULT '0' COMMENT '更新时间',
   `created_at` int(10) unsigned NOT NULL COMMENT '创建时间',
   PRIMARY KEY (`id`),
@@ -50,8 +50,9 @@ CREATE TABLE `menu_item` (
   `service_id` int(10) unsigned NOT NULL COMMENT '服务 id',
   `key` varchar(32) NOT NULL COMMENT '菜单标识',
   `name` varchar(32) NOT NULL COMMENT '菜单名称',
+  `sort` int(10) unsigned NOT NULL DEFAULT '0' COMMENT '排序值',
   `updated_at` int(10) unsigned NOT NULL DEFAULT '0' COMMENT '更新时间',
-  `created_at` int(11) NOT NULL COMMENT '创建时间',
+  `created_at` int(10) NOT NULL COMMENT '创建时间',
   PRIMARY KEY (`id`),
   UNIQUE KEY `service_id_key` (`service_id`,`key`),
   CONSTRAINT `menu_item_service_id` FOREIGN KEY (`service_id`) REFERENCES `service` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
