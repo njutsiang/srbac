@@ -31,7 +31,17 @@ vi ./config.yaml
 ```
 
 ```text
-# MySQL 连接
+# 监听端口
+listen:
+  port: 8000
+
+# 默认超级管理员
+# 仅在系统初始化的时候生成超级管理员，后续可在 Web 管理后台修改超管账号和密码
+super:
+  username: admin
+  password: 123456
+
+# MySQL 连接配置
 mysql:
   host: 127.0.0.1
   port: 3306
@@ -40,7 +50,7 @@ mysql:
   db: srbac
   charset: utf8mb4
   
-# Redis 连接
+# Redis 连接配置
 redis:
   host: 127.0.0.1
   port: 6379
