@@ -11,6 +11,9 @@ var Config = getConfig()
 
 // 配置文件
 type ConfigYaml struct {
+	Listen struct{
+		Port string
+	}
 	Mysql struct{
 		Host string
 		Port string

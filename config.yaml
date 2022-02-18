@@ -1,3 +1,8 @@
+# 监听端口
+listen:
+  port: 8102
+
+# MySQL 连接配置
 mysql:
   host: 127.0.0.1
   port: 3306
@@ -5,10 +10,14 @@ mysql:
   password: 123456
   db: srbac
   charset: utf8mb4
+
+# Redis 连接配置
 redis:
   host: 127.0.0.1
   port: 6379
   password:
   db: 0
+
+# Cookie 加密的密钥
 cookie:
   key: 19be30e8a9850e5cb5d1f7e3e47bde35

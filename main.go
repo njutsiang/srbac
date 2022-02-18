@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"srbac/check"
 	"srbac/middlewares"
 	"srbac/routers"
@@ -29,6 +30,6 @@ func main() {
 	check.InitSrbacData()
 
 	// 启动端口
-	err := srbac.Engine.Run(":8102")
+	err := srbac.Engine.Run(fmt.Sprintf(":%s", srbac.Config.Listen.Port))
 	srbac.CheckError(err)
 }
