@@ -85,6 +85,10 @@ SRBAC 可以让你从多个系统的角色权限管理和鉴权中解脱出来�
 
 [见详细文档](https://github.com/njutsiang/srbac/blob/main/assets/docs/manual.md)
 
+## 业务流程
+
+<img src="https://github.com/njutsiang/srbac/raw/main/assets/img/flow-chart.png">
+
 ## 界面截图
 
 <img src="https://github.com/njutsiang/srbac/raw/main/assets/img/screely-1645003820980.png">
