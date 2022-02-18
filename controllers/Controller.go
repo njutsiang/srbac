@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"io/ioutil"
 	"mime/multipart"
@@ -149,4 +150,10 @@ func (this *Controller) GetUser(ctx *gin.Context) *models.User {
 		panic(srbac.NewJsonError(code.UserNotLogin))
 	}
 	return user
+}
+
+// 当前登录用户 id
+func (this *Controller) GetUserId(ctx *gin.Context) int64 {
+	session := sessions.Default(ctx)
+	return utils.ToInt64(session.Get("user.id"))
 }

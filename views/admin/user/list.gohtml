@@ -47,7 +47,7 @@
                             <td>{{.GetCreatedAt}}</td>
                             <td>
                                 <a class="btn btn-sm btn-outline-primary no-border {{if eq .Id 1}}disabled{{end}}" href="/admin/user-role/list?userId={{.Id}}">角色权限</a>
-                                <a class="btn btn-sm btn-outline-primary no-border" href="/admin/user/edit?id={{.Id}}">编辑</a>
+                                <a class="btn btn-sm btn-outline-primary no-border {{if eq .Id 1}}{{if eq $.sessionUserId "1"}}{{else}}disabled{{end}}{{end}}" href="/admin/user/edit?id={{.Id}}">编辑</a>
                                 <form class="delete-form" method="post" action="/admin/user/delete">
                                     <input type="hidden" name="{{$.csrfTokenKey}}" value="{{$.csrfTokenValue}}" >
                                     <input type="hidden" name="id" value="{{.Id}}">

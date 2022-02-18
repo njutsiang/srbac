@@ -2,6 +2,12 @@
 listen:
   port: 8102
 
+# 默认超级管理员
+# 仅在系统初始化的时候生成超级管理员，后续可在 Web 管理后台修改超管账号和密码
+super:
+  username: admin
+  password: 123456
+
 # MySQL 连接配置
 mysql:
   host: 127.0.0.1
