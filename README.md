@@ -11,17 +11,6 @@
 
 SRBAC 可以让你从多个系统的角色权限管理和鉴权中解脱出来，完全解耦鉴权和业务逻辑，让开发者专注实现业务逻辑，而无需为权限问题分心，提高开发效率，并且给权限管理者提供集中的角色权限管理和分配功能。
 
-## 依赖服务
-
-- MySQL：持久化存储服务、权限、角色、用户数据
-- Redis：MySQL 数据的高速缓存
-- Etcd：存储 APISIX 的动态配置数据
-- APISIX：高性能动态网关
-
-## 安装部署
-
-[见详细文档](https://github.com/njutsiang/srbac/blob/main/assets/docs/install.md)
-
 ## SRBAC 亮点
 
 - 适用于多服务集群
@@ -81,11 +70,18 @@ SRBAC 可以让你从多个系统的角色权限管理和鉴权中解脱出来�
 - business-upstream
   - 企业动态路由插件，适用于 SaaS 企业平台，根据企业的付费等级动态路由，达到不同企业等级之间物理隔离的目的
 
-## 使用指南
+## 部署和使用指南
 
-[见详细文档](https://github.com/njutsiang/srbac/blob/main/assets/docs/manual.md)
+- [安装部署](https://github.com/njutsiang/srbac/blob/main/assets/docs/install.md)
+- [使用指南](https://github.com/njutsiang/srbac/blob/main/assets/docs/manual.md)
 
 ## 业务流程
+
+这是一个简化的业务流程图，如果整个系统需要有更高的负载能力和可用性，可以选择：
+1. Redis 采用集群部署（待验证）；
+2. 在用户客户端和 APISIX 之前增加 LB，APISIX 采用多节点部署；
+3. APISIX 和业务系统之间增加 LB，后端的业务系统按实际情况选择多节点部署；
+4. APISIX 和业务系统之间也可以换作服务注册发现，能够完成更多服务治理。
 
 <img src="https://github.com/njutsiang/srbac/raw/main/assets/img/flow-chart.png">
 
