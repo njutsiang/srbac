@@ -4,6 +4,7 @@ import (
 	"errors"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
+	"srbac/cache"
 	"srbac/code"
 	"srbac/exception"
 	"srbac/libraries/utils"
@@ -38,6 +39,7 @@ func initSrbacService() *models.Service {
 		if !(service.Validate() && service.Create()) {
 			exception.NewException(code.InternalError, service.GetError())
 		}
+		cache.SetService(service)
 		return service
 	}
 	srbac.CheckError(re.Error)
@@ -93,6 +95,7 @@ func initSrbacRouter(service *models.Service, route srbac.Route, sort int) {
 		if !(apiItem.Validate() && apiItem.Create()) {
 			exception.NewException(code.InternalError, apiItem.GetError())
 		}
+		cache.SetApiItem(apiItem)
 		return
 	}
 	srbac.CheckError(re.Error)
