@@ -7,11 +7,11 @@ import (
 	"github.com/go-playground/validator/v10"
 	"gorm.io/gorm"
 	"reflect"
+	"srbac/app"
 	"srbac/code"
 	"srbac/exception"
 	"srbac/libraries/log"
 	"srbac/libraries/utils"
-	"srbac/srbac"
 	"strings"
 )
 
@@ -207,7 +207,7 @@ func (this *Model) SetDb(db *gorm.DB) {
 // 获取数据库连接
 func (this *Model) GetDb() *gorm.DB {
 	if this.db == nil {
-		return srbac.Db
+		return app.Db
 	} else {
 		return this.db
 	}

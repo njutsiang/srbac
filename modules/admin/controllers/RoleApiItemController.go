@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
+	"srbac/app"
 	"srbac/cache"
 	"srbac/code"
 	"srbac/controllers"
@@ -12,7 +13,6 @@ import (
 	"srbac/libraries/utils"
 	"srbac/logics"
 	"srbac/models"
-	"srbac/srbac"
 )
 
 // 角色的接口权限
@@ -30,29 +30,29 @@ func (this *RoleApiItemController) Edit(c *gin.Context) {
 	referer := this.GetReferer(c, fmt.Sprintf("/admin/role-service/list?roleId=%d", roleId))
 
 	roleService := &models.RoleService{}
-	re := srbac.Db.First(roleService, roleServiceId)
+	re := app.Db.First(roleService, roleServiceId)
 	if errors.Is(re.Error, gorm.ErrRecordNotFound) {
 		this.Redirect(c, referer)
 	}
-	srbac.CheckError(re.Error)
+	app.CheckError(re.Error)
 
 	models.RoleServicesLoadServices([]*models.RoleService{roleService})
 
 	role := &models.Role{}
-	re = srbac.Db.First(role, roleService.RoleId)
+	re = app.Db.First(role, roleService.RoleId)
 	if errors.Is(re.Error, gorm.ErrRecordNotFound) {
 		this.Redirect(c, referer)
 	}
-	srbac.CheckError(re.Error)
+	app.CheckError(re.Error)
 
 	apiItems := []*models.ApiItem{}
-	re = logics.WithApiItemsOrder(srbac.Db.Where("service_id = ?", roleService.ServiceId)).Limit(1000).Find(&apiItems)
-	srbac.CheckError(re.Error)
+	re = logics.WithApiItemsOrder(app.Db.Where("service_id = ?", roleService.ServiceId)).Limit(1000).Find(&apiItems)
+	app.CheckError(re.Error)
 
 	// 角色和接口节点的关联
 	roleApiItems := []*models.RoleApiItem{}
-	re = srbac.Db.Where("role_id = ? AND service_id = ?", roleService.RoleId, roleService.ServiceId).Limit(1000).Find(&roleApiItems)
-	srbac.CheckError(re.Error)
+	re = app.Db.Where("role_id = ? AND service_id = ?", roleService.RoleId, roleService.ServiceId).Limit(1000).Find(&roleApiItems)
+	app.CheckError(re.Error)
 
 	// 角色关联的接口节点 ids
 	apiItemIds := []int64{}
@@ -62,9 +62,9 @@ func (this *RoleApiItemController) Edit(c *gin.Context) {
 
 	if c.Request.Method == "POST" {
 		err := c.Request.ParseForm()
-		srbac.CheckError(err)
+		app.CheckError(err)
 		newApiItemIds := utils.ToSliceInt64(c.Request.PostForm["api_item_id[]"])
-		if err := srbac.Db.Transaction(func(db *gorm.DB) error {
+		if err := app.Db.Transaction(func(db *gorm.DB) error {
 			// 删除
 			for _, roleApiItem := range roleApiItems {
 				if !utils.InSlice(roleApiItem.ApiItemId, newApiItemIds) {

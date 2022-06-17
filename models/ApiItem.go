@@ -2,8 +2,8 @@ package models
 
 import (
 	"reflect"
+	"srbac/app"
 	"srbac/libraries/utils"
-	"srbac/srbac"
 	"time"
 )
 
@@ -86,7 +86,7 @@ func (this *ApiItem) ErrorMessages() map[string]string {
 
 // 格式化创建时间
 func (this *ApiItem) GetCreatedAt() string {
-	return time.Unix(this.CreatedAt, 0).Format(srbac.TimeYmdhis)
+	return time.Unix(this.CreatedAt, 0).Format(app.TimeYmdhis)
 }
 
 // 所属服务名称

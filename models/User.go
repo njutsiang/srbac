@@ -3,8 +3,8 @@ package models
 import (
 	"golang.org/x/crypto/bcrypt"
 	"reflect"
+	"srbac/app"
 	"srbac/libraries/utils"
-	"srbac/srbac"
 	"time"
 )
 
@@ -28,7 +28,7 @@ func NewUser(data map[string]interface{}) *User {
 	if len(password) > 0 {
 		var err error
 		password_hash, err = bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-		srbac.CheckError(err)
+		app.CheckError(err)
 	}
 	user := &User{
 		rawPassword: password,
@@ -58,7 +58,7 @@ func (this *User) SetAttributes(data map[string]interface{}) {
 	password := utils.ToString(data["password"])
 	if len(password) > 0 {
 		password_hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-		srbac.CheckError(err)
+		app.CheckError(err)
 		this.rawPassword = password
 		this.Password = string(password_hash)
 	}
@@ -85,7 +85,7 @@ func (this *User) ErrorMessages() map[string]string {
 
 // 格式化创建时间
 func (this *User) GetCreatedAt() string {
-	return time.Unix(this.CreatedAt, 0).Format(srbac.TimeYmdhis)
+	return time.Unix(this.CreatedAt, 0).Format(app.TimeYmdhis)
 }
 
 // 原始明文密码

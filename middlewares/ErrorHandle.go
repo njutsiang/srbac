@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"srbac/app"
 	"srbac/exception"
 	"srbac/libraries/log"
-	"srbac/srbac"
 )
 
 // 处理 panic 抛出的异常
@@ -16,12 +16,12 @@ func ErrorHandle(ctx *gin.Context) {
 			code := 0
 			message := "未知错误"
 			switch err.(type) {
-			case srbac.Redirect, srbac.Response:
+			case app.Redirect, app.Response:
 				return
 			case string:
 				message = err.(string)
 			case error:
-				if jsonError, ok := err.(*srbac.JsonError); ok {
+				if jsonError, ok := err.(*app.JsonError); ok {
 					handleJsonError(ctx, jsonError)
 					return
 				}
@@ -41,7 +41,7 @@ func ErrorHandle(ctx *gin.Context) {
 }
 
 // 处理 JsonError
-func handleJsonError(ctx *gin.Context, jsonError *srbac.JsonError) {
+func handleJsonError(ctx *gin.Context, jsonError *app.JsonError) {
 	ctx.Status(jsonError.StatusCode)
 	ctx.Header("Content-Type", "application/json; charset=utf-8")
 	jsonString, _ := json.Marshal(map[string]interface{}{
@@ -57,7 +57,7 @@ func handleJsonError(ctx *gin.Context, jsonError *srbac.JsonError) {
 
 // 处理错误提示语
 func handleHtmlError(c *gin.Context, code int, message string) {
-	srbac.HtmlStatus(c, http.StatusBadRequest, "./views/admin/error/error.gohtml", map[string]interface{}{
+	app.HtmlStatus(c, http.StatusBadRequest, "./views/admin/error/error.gohtml", map[string]interface{}{
 		"code": code,
 		"message": message,
 		"referer": getReferer(c, "/admin"),

@@ -10,11 +10,11 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 	"net/http"
+	"srbac/app"
 	"srbac/cache"
 	"srbac/controllers"
 	"srbac/libraries/utils"
 	"srbac/models"
-	"srbac/srbac"
 	"time"
 )
 
@@ -56,7 +56,7 @@ func (this *LoginController) Login(c *gin.Context) {
 		}
 		if !hasErr {
 			user := &models.User{}
-			re := srbac.Db.Where("username = ?", form.Username).First(user)
+			re := app.Db.Where("username = ?", form.Username).First(user)
 			if errors.Is(re.Error, gorm.ErrRecordNotFound) {
 				hasErr = true
 				this.SetFailed(c, "用户不存在")
@@ -116,7 +116,7 @@ func (this *LoginController) Logout(c *gin.Context) {
 	}
 	session.Delete("user.token")
 	err := session.Save()
-	srbac.CheckError(err)
+	app.CheckError(err)
 	http.SetCookie(c.Writer, &http.Cookie{
 		Name: "user_token",
 		MaxAge: -1,

@@ -1,18 +1,18 @@
 package logics
 
 import (
+	"srbac/app"
 	"srbac/models"
-	"srbac/srbac"
 )
 
 // 所有服务 ids 枚举值
-func ServiceIds() []srbac.IntValue {
+func ServiceIds() []app.IntValue {
 	services := []*models.Service{}
-	re := srbac.Db.Order("id asc").Limit(1000).Find(&services)
-	srbac.CheckError(re.Error)
-	serviceIds := []srbac.IntValue{}
+	re := app.Db.Order("id asc").Limit(1000).Find(&services)
+	app.CheckError(re.Error)
+	serviceIds := []app.IntValue{}
 	for _, service := range services {
-		serviceIds = append(serviceIds, srbac.IntValue{
+		serviceIds = append(serviceIds, app.IntValue{
 			Key: service.Id,
 			Value: service.Name,
 		})

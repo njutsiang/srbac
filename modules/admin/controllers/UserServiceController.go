@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
+	"srbac/app"
 	"srbac/cache"
 	"srbac/code"
 	"srbac/controllers"
@@ -12,7 +13,6 @@ import (
 	"srbac/libraries/utils"
 	"srbac/logics"
 	"srbac/models"
-	"srbac/srbac"
 )
 
 // 用户服务关系
@@ -32,19 +32,19 @@ func (this *UserServiceController) List(c *gin.Context) {
 	page, perPage := utils.GetPageInfo(params)
 
 	user := &models.User{}
-	re := srbac.Db.First(user, userId)
+	re := app.Db.First(user, userId)
 	if errors.Is(re.Error, gorm.ErrRecordNotFound) {
 		this.Redirect(c, referer)
 	}
-	srbac.CheckError(re.Error)
+	app.CheckError(re.Error)
 
 	count := int64(0)
-	query := srbac.Db.Model(&models.UserService{}).Where("user_id = ?", userId).Count(&count)
-	srbac.CheckError(query.Error)
+	query := app.Db.Model(&models.UserService{}).Where("user_id = ?", userId).Count(&count)
+	app.CheckError(query.Error)
 
 	userServices := []*models.UserService{}
 	re = query.Order("id asc").Offset((page - 1) * perPage).Limit(perPage).Find(&userServices)
-	srbac.CheckError(re.Error)
+	app.CheckError(re.Error)
 
 	userServicesMap := map[int64]bool{}
 	for _, userService := range userServices {
@@ -69,7 +69,7 @@ func (this *UserServiceController) List(c *gin.Context) {
 	if hasNew {
 		userServices = []*models.UserService{}
 		re = query.Order("id asc").Offset((page - 1) * perPage).Limit(perPage).Find(&userServices)
-		srbac.CheckError(re.Error)
+		app.CheckError(re.Error)
 	}
 
 	models.UserServicesLoadServices(userServices)
@@ -93,19 +93,19 @@ func (this *UserServiceController) Edit(c *gin.Context) {
 	referer := this.GetReferer(c, fmt.Sprintf("/admin/user-service/list?userId=%d", userId))
 
 	user := &models.User{}
-	re := srbac.Db.First(user, userId)
+	re := app.Db.First(user, userId)
 	if errors.Is(re.Error, gorm.ErrRecordNotFound) {
 		this.Redirect(c, referer)
 	}
-	srbac.CheckError(re.Error)
+	app.CheckError(re.Error)
 
 	services := []*models.Service{}
-	re = srbac.Db.Order("id asc").Limit(1000).Find(&services)
-	srbac.CheckError(re.Error)
+	re = app.Db.Order("id asc").Limit(1000).Find(&services)
+	app.CheckError(re.Error)
 
 	userServices := []*models.UserService{}
-	re = srbac.Db.Where("user_id = ?", userId).Find(&userServices)
-	srbac.CheckError(re.Error)
+	re = app.Db.Where("user_id = ?", userId).Find(&userServices)
+	app.CheckError(re.Error)
 
 	// 用户的角色拥有的服务 ids
 	roleServiceIds := logics.FindRoleServiceIdsByUserId(userId)
@@ -122,10 +122,10 @@ func (this *UserServiceController) Edit(c *gin.Context) {
 
 	if c.Request.Method == "POST" {
 		err := c.Request.ParseForm()
-		srbac.CheckError(err)
+		app.CheckError(err)
 		newServiceIds := utils.ToSliceInt64(c.Request.PostForm["service_id[]"])
 		deleteUserServices := []*models.UserService{}
-		if err := srbac.Db.Transaction(func(db *gorm.DB) error {
+		if err := app.Db.Transaction(func(db *gorm.DB) error {
 			// 删除
 			for _, userService := range userServices {
 				if !utils.InSlice(userService.ServiceId, newServiceIds) && !utils.InSlice(userService.ServiceId, roleServiceIds) {
@@ -181,13 +181,13 @@ func (this *UserServiceController) Delete(c *gin.Context) {
 	referer := this.GetReferer(c, fmt.Sprintf("/admin/user-service/list?userId=%d", userId), false)
 
 	userService := &models.UserService{}
-	re := srbac.Db.First(userService, id)
+	re := app.Db.First(userService, id)
 	if errors.Is(re.Error, gorm.ErrRecordNotFound) {
 		this.Redirect(c, referer)
 	}
-	srbac.CheckError(re.Error)
+	app.CheckError(re.Error)
 
-	err := srbac.Db.Transaction(func(db *gorm.DB) error {
+	err := app.Db.Transaction(func(db *gorm.DB) error {
 		if err := db.Delete(userService).Error; err != nil {
 			return err
 		}
@@ -208,7 +208,7 @@ func (this *UserServiceController) Delete(c *gin.Context) {
 		}
 		return nil
 	})
-	srbac.CheckError(err)
+	app.CheckError(err)
 
 	cache.DelUserApiItemsByUserService(userService)
 	cache.DelUserDataItemsByUserService(userService)

@@ -4,12 +4,12 @@ import (
 	"errors"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
+	"srbac/app"
 	"srbac/cache"
 	"srbac/controllers"
 	"srbac/libraries/utils"
 	"srbac/logics"
 	"srbac/models"
-	"srbac/srbac"
 	"time"
 )
 
@@ -25,16 +25,16 @@ func (this *ApiItemController) List(c *gin.Context) {
 	serviceId := utils.ToInt(c.Query("serviceId"))
 
 	count := int64(0)
-	find := srbac.Db.Model(&models.ApiItem{})
+	find := app.Db.Model(&models.ApiItem{})
 	if serviceId > 0 {
 		find = find.Where("service_id = ?", serviceId)
 	}
 	re := find.Count(&count)
-	srbac.CheckError(re.Error)
+	app.CheckError(re.Error)
 
 	apiItems := []*models.ApiItem{}
 	re = logics.WithApiItemsOrder(find).Offset((page - 1) * per_page).Limit(per_page).Find(&apiItems)
-	srbac.CheckError(re.Error)
+	app.CheckError(re.Error)
 
 	models.ApiItemsLoadServices(apiItems)
 	serviceIds := logics.ServiceIds()
@@ -86,11 +86,11 @@ func (this *ApiItemController) Edit(c *gin.Context) {
 	}
 
 	apiItem := &models.ApiItem{}
-	re := srbac.Db.First(apiItem, id)
+	re := app.Db.First(apiItem, id)
 	if errors.Is(re.Error, gorm.ErrRecordNotFound) {
 		this.Redirect(c, referer)
 	}
-	srbac.CheckError(re.Error)
+	app.CheckError(re.Error)
 
 	if c.Request.Method == "POST" {
 		params := this.GetPostForm(c)
@@ -128,22 +128,22 @@ func (this *ApiItemController) Delete(c *gin.Context) {
 	}
 
 	apiItem := &models.ApiItem{}
-	re := srbac.Db.First(apiItem, id)
+	re := app.Db.First(apiItem, id)
 	if errors.Is(re.Error, gorm.ErrRecordNotFound) {
 		this.Redirect(c, referer)
 	}
-	srbac.CheckError(re.Error)
+	app.CheckError(re.Error)
 
 	roleApiItems := []*models.RoleApiItem{}
-	re = srbac.Db.Distinct("role_id", "service_id").Where("api_item_id = ?", apiItem.Id).Find(&roleApiItems)
-	srbac.CheckError(re.Error)
+	re = app.Db.Distinct("role_id", "service_id").Where("api_item_id = ?", apiItem.Id).Find(&roleApiItems)
+	app.CheckError(re.Error)
 
 	userApiItems := []*models.UserApiItem{}
-	re = srbac.Db.Distinct("user_id", "service_id").Where("api_item_id = ?", apiItem.Id).Find(&userApiItems)
-	srbac.CheckError(re.Error)
+	re = app.Db.Distinct("user_id", "service_id").Where("api_item_id = ?", apiItem.Id).Find(&userApiItems)
+	app.CheckError(re.Error)
 
-	re = srbac.Db.Delete(apiItem)
-	srbac.CheckError(re.Error)
+	re = app.Db.Delete(apiItem)
+	app.CheckError(re.Error)
 
 	cache.DelApiItem(apiItem)
 	cache.SetRoleApiItemsByRoleApiItems(roleApiItems)

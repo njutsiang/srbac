@@ -6,11 +6,11 @@ import (
 	"io/ioutil"
 	"mime/multipart"
 	"net/http"
+	"srbac/app"
 	"srbac/code"
 	"srbac/libraries/log"
 	"srbac/libraries/utils"
 	"srbac/models"
-	"srbac/srbac"
 )
 
 // 控制器基类
@@ -19,7 +19,7 @@ type Controller struct {
 
 // 输出 HTML
 func (this *Controller) HTML(ctx *gin.Context, filename string, params ...map[string]interface{}) {
-	srbac.HtmlStatus(ctx, http.StatusOK, filename, params...)
+	app.HtmlStatus(ctx, http.StatusOK, filename, params...)
 }
 
 // 获取 POST 表单数据
@@ -38,7 +38,7 @@ func (this *Controller) GetPostForm(ctx *gin.Context) map[string]interface{} {
 func (this *Controller) GetPostMultipartForm(ctx *gin.Context) *multipart.Form {
 	contentType := ctx.Request.Header.Get("Content-Type")
 	if ctx.Request.Method == "POST" && len(contentType) >= 19 && contentType[0:19] == "multipart/form-data" {
-		if err := ctx.Request.ParseMultipartForm(srbac.Engine.MaxMultipartMemory); err != nil {
+		if err := ctx.Request.ParseMultipartForm(app.Engine.MaxMultipartMemory); err != nil {
 			log.Error(err)
 		}
 	}
@@ -102,7 +102,7 @@ func (this *Controller) GetReferer(ctx *gin.Context, defaultUri string, redirect
 // 跳转至指定的地址，并且 panic
 func (this *Controller) Redirect(ctx *gin.Context, location string) {
 	ctx.Redirect(http.StatusFound, location)
-	panic(srbac.Redirect(location))
+	panic(app.Redirect(location))
 }
 
 // 设置错误信息
@@ -136,18 +136,18 @@ func (this *Controller) GetSuccess(ctx *gin.Context) string {
 // 响应错误，并且 panic
 func (this *Controller) ResponseErrorJson(ctx *gin.Context, data interface{}) {
 	ctx.JSON(http.StatusBadRequest, data)
-	panic(srbac.Response(http.StatusBadRequest))
+	panic(app.Response(http.StatusBadRequest))
 }
 
 // 获取当前登录用户
 func (this *Controller) GetUser(ctx *gin.Context) *models.User {
 	value, exists := ctx.Get("user")
 	if !exists {
-		panic(srbac.NewJsonError(code.UserNotLogin))
+		panic(app.NewJsonError(code.UserNotLogin))
 	}
 	user, ok := value.(*models.User)
 	if !ok {
-		panic(srbac.NewJsonError(code.UserNotLogin))
+		panic(app.NewJsonError(code.UserNotLogin))
 	}
 	return user
 }

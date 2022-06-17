@@ -4,12 +4,12 @@ import (
 	"errors"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
+	"srbac/app"
 	"srbac/cache"
 	"srbac/controllers"
 	"srbac/libraries/utils"
 	"srbac/logics"
 	"srbac/models"
-	"srbac/srbac"
 	"time"
 )
 
@@ -25,16 +25,16 @@ func (this *DataItemController) List(c *gin.Context) {
 	serviceId := utils.ToInt(c.Query("serviceId"))
 
 	count := int64(0)
-	find := srbac.Db.Model(&models.DataItem{})
+	find := app.Db.Model(&models.DataItem{})
 	if serviceId > 0 {
 		find = find.Where("service_id = ?", serviceId)
 	}
 	re := find.Count(&count)
-	srbac.CheckError(re.Error)
+	app.CheckError(re.Error)
 
 	dataItems := []*models.DataItem{}
 	re = find.Order("id asc").Offset((page - 1) * per_page).Limit(per_page).Find(&dataItems)
-	srbac.CheckError(re.Error)
+	app.CheckError(re.Error)
 
 	models.DataItemsLoadServices(dataItems)
 	serviceIds := logics.ServiceIds()
@@ -83,11 +83,11 @@ func (this *DataItemController) Edit(c *gin.Context) {
 	}
 
 	dataItem := &models.DataItem{}
-	re := srbac.Db.First(dataItem, id)
+	re := app.Db.First(dataItem, id)
 	if errors.Is(re.Error, gorm.ErrRecordNotFound) {
 		this.Redirect(c, referer)
 	}
-	srbac.CheckError(re.Error)
+	app.CheckError(re.Error)
 
 	if c.Request.Method == "POST" {
 		params := this.GetPostForm(c)
@@ -121,15 +121,15 @@ func (this *DataItemController) Delete(c *gin.Context) {
 	}
 
 	roleDataItems := []*models.RoleDataItem{}
-	re := srbac.Db.Distinct("role_id", "service_id").Where("data_item_id = ?", id).Find(&roleDataItems)
-	srbac.CheckError(re.Error)
+	re := app.Db.Distinct("role_id", "service_id").Where("data_item_id = ?", id).Find(&roleDataItems)
+	app.CheckError(re.Error)
 
 	userDataItems := []*models.UserDataItem{}
-	re = srbac.Db.Distinct("user_id", "service_id").Where("data_item_id = ?", id).Find(&userDataItems)
-	srbac.CheckError(re.Error)
+	re = app.Db.Distinct("user_id", "service_id").Where("data_item_id = ?", id).Find(&userDataItems)
+	app.CheckError(re.Error)
 
-	re =srbac.Db.Delete(&models.DataItem{}, id)
-	srbac.CheckError(re.Error)
+	re = app.Db.Delete(&models.DataItem{}, id)
+	app.CheckError(re.Error)
 
 	cache.SetRoleDataItemsByRoleDataItems(roleDataItems)
 	cache.SetUserDataItemsByUserDataItems(userDataItems)

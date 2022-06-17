@@ -5,13 +5,13 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
+	"srbac/app"
 	"srbac/cache"
 	"srbac/code"
 	"srbac/controllers"
 	"srbac/exception"
 	"srbac/libraries/utils"
 	"srbac/models"
-	"srbac/srbac"
 )
 
 // 用户角色关系
@@ -31,19 +31,19 @@ func (this *UserRoleController) List(c *gin.Context) {
 	page, perPage := utils.GetPageInfo(params)
 
 	user := &models.User{}
-	re := srbac.Db.First(user, userId)
+	re := app.Db.First(user, userId)
 	if errors.Is(re.Error, gorm.ErrRecordNotFound) {
 		this.Redirect(c, referer)
 	}
-	srbac.CheckError(re.Error)
+	app.CheckError(re.Error)
 
 	count := int64(0)
-	query := srbac.Db.Model(&models.UserRole{}).Where("user_id = ?", userId).Count(&count)
-	srbac.CheckError(query.Error)
+	query := app.Db.Model(&models.UserRole{}).Where("user_id = ?", userId).Count(&count)
+	app.CheckError(query.Error)
 
 	userRoles := []*models.UserRole{}
 	re = query.Order("id asc").Offset((page - 1) * perPage).Limit(perPage).Find(&userRoles)
-	srbac.CheckError(re.Error)
+	app.CheckError(re.Error)
 
 	models.UserRolesLoadRoles(userRoles)
 
@@ -65,19 +65,19 @@ func (this *UserRoleController) Edit(c *gin.Context) {
 	referer := this.GetReferer(c, fmt.Sprintf("/admin/user-role/list?userId=%d", userId))
 
 	user := &models.User{}
-	re := srbac.Db.First(user, userId)
+	re := app.Db.First(user, userId)
 	if errors.Is(re.Error, gorm.ErrRecordNotFound) {
 		this.Redirect(c, referer)
 	}
-	srbac.CheckError(re.Error)
+	app.CheckError(re.Error)
 
 	roles := []*models.Role{}
-	re = srbac.Db.Order("id asc").Limit(1000).Find(&roles)
-	srbac.CheckError(re.Error)
+	re = app.Db.Order("id asc").Limit(1000).Find(&roles)
+	app.CheckError(re.Error)
 
 	userRoles := []*models.UserRole{}
-	re = srbac.Db.Where("user_id = ?", userId).Find(&userRoles)
-	srbac.CheckError(re.Error)
+	re = app.Db.Where("user_id = ?", userId).Find(&userRoles)
+	app.CheckError(re.Error)
 
 	roleIds := []int64{}
 	for _, userRole := range userRoles {
@@ -86,9 +86,9 @@ func (this *UserRoleController) Edit(c *gin.Context) {
 
 	if c.Request.Method == "POST" {
 		err := c.Request.ParseForm()
-		srbac.CheckError(err)
+		app.CheckError(err)
 		newRoleIds := utils.ToSliceInt64(c.Request.PostForm["role_id[]"])
-		if err := srbac.Db.Transaction(func(db *gorm.DB) error {
+		if err := app.Db.Transaction(func(db *gorm.DB) error {
 			// 删除
 			for _, userRole := range userRoles {
 				if !utils.InSlice(userRole.RoleId, newRoleIds) {
@@ -136,8 +136,8 @@ func (this *UserRoleController) Delete(c *gin.Context) {
 		exception.NewException(code.ParamsError)
 	}
 	referer := this.GetReferer(c, fmt.Sprintf("/admin/user-role/list?userId=%d", userId), false)
-	re := srbac.Db.Delete(&models.UserRole{}, id)
-	srbac.CheckError(re.Error)
+	re := app.Db.Delete(&models.UserRole{}, id)
+	app.CheckError(re.Error)
 	cache.SetUserRoles(userId)
 	this.Redirect(c, referer)
 }

@@ -1,8 +1,6 @@
 package models
 
-import (
-	"srbac/srbac"
-)
+import "srbac/app"
 
 // 服务的关联数据模型
 type ServiceRelation interface {
@@ -25,8 +23,8 @@ func (models ServiceRelations) LoadServices() {
 		serviceIds = append(serviceIds, model.GetServiceId())
 	}
 	services := []*Service{}
-	re := srbac.Db.Find(&services, serviceIds)
-	srbac.CheckError(re.Error)
+	re := app.Db.Find(&services, serviceIds)
+	app.CheckError(re.Error)
 
 	// 处理成以 Id 为键的 Map
 	servicesMap := map[int64]*Service{}

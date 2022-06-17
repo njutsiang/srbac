@@ -1,4 +1,4 @@
-package srbac
+package app
 
 import (
 	"gopkg.in/yaml.v2"

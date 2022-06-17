@@ -5,13 +5,13 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
+	"srbac/app"
 	"srbac/cache"
 	"srbac/code"
 	"srbac/controllers"
 	"srbac/exception"
 	"srbac/libraries/utils"
 	"srbac/models"
-	"srbac/srbac"
 )
 
 // 角色服务关系
@@ -31,19 +31,19 @@ func (this *RoleServiceController) List(c *gin.Context) {
 	}
 
 	role := &models.Role{}
-	re := srbac.Db.First(role, roleId)
+	re := app.Db.First(role, roleId)
 	if errors.Is(re.Error, gorm.ErrRecordNotFound) {
 		this.Redirect(c, referer)
 	}
-	srbac.CheckError(re.Error)
+	app.CheckError(re.Error)
 
 	count := int64(0)
-	query := srbac.Db.Model(&models.RoleService{}).Where("role_id = ?", roleId).Count(&count)
-	srbac.CheckError(query.Error)
+	query := app.Db.Model(&models.RoleService{}).Where("role_id = ?", roleId).Count(&count)
+	app.CheckError(query.Error)
 
 	roleServices := []*models.RoleService{}
 	re = query.Order("service_id asc").Limit(perPage).Offset((page - 1) * perPage).Find(&roleServices)
-	srbac.CheckError(re.Error)
+	app.CheckError(re.Error)
 
 	models.RoleServicesLoadServices(roleServices)
 
@@ -66,21 +66,21 @@ func (this *RoleServiceController) Edit(c *gin.Context) {
 
 	// 当前角色
 	role := &models.Role{}
-	re := srbac.Db.First(role, roleId)
+	re := app.Db.First(role, roleId)
 	if errors.Is(re.Error, gorm.ErrRecordNotFound) {
 		this.Redirect(c, referer)
 	}
-	srbac.CheckError(re.Error)
+	app.CheckError(re.Error)
 
 	// 所有服务
 	services := []*models.Service{}
-	re = srbac.Db.Order("id asc").Limit(1000).Find(&services)
-	srbac.CheckError(re.Error)
+	re = app.Db.Order("id asc").Limit(1000).Find(&services)
+	app.CheckError(re.Error)
 
 	// 角色服务关系
 	roleServices := []*models.RoleService{}
-	re = srbac.Db.Where("role_id = ?", roleId).Limit(1000).Find(&roleServices)
-	srbac.CheckError(re.Error)
+	re = app.Db.Where("role_id = ?", roleId).Limit(1000).Find(&roleServices)
+	app.CheckError(re.Error)
 
 	// 角色关联的服务 ids
 	serviceIds := []int64{}
@@ -91,10 +91,10 @@ func (this *RoleServiceController) Edit(c *gin.Context) {
 	if c.Request.Method == "POST" {
 		// 取参数
 		err := c.Request.ParseForm()
-		srbac.CheckError(err)
+		app.CheckError(err)
 		newServiceIds := utils.ToSliceInt64(c.Request.PostForm["service_id[]"])
 		deleteRoleServices := []*models.RoleService{}
-		if err := srbac.Db.Transaction(func(db *gorm.DB) error {
+		if err := app.Db.Transaction(func(db *gorm.DB) error {
 			// 删除
 			for _, roleService := range roleServices {
 				if !utils.InSlice(roleService.ServiceId, newServiceIds) {
@@ -148,13 +148,13 @@ func (this *RoleServiceController) Delete(c *gin.Context) {
 	referer := this.GetReferer(c, fmt.Sprintf("/admin/role-service/list?roleId=%d", roleId), false)
 
 	roleService := &models.RoleService{}
-	re := srbac.Db.First(roleService, id)
+	re := app.Db.First(roleService, id)
 	if errors.Is(re.Error, gorm.ErrRecordNotFound) {
 		this.Redirect(c, referer)
 	}
-	srbac.CheckError(re.Error)
+	app.CheckError(re.Error)
 
-	err := srbac.Db.Transaction(func(db *gorm.DB) error {
+	err := app.Db.Transaction(func(db *gorm.DB) error {
 		if err := db.Delete(roleService).Error; err != nil {
 			return err
 		}
@@ -175,7 +175,7 @@ func (this *RoleServiceController) Delete(c *gin.Context) {
 		}
 		return nil
 	})
-	srbac.CheckError(err)
+	app.CheckError(err)
 
 	cache.DelRoleApiItemsByRoleService(roleService)
 	cache.DelRoleDataItemsByRoleService(roleService)

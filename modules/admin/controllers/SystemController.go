@@ -3,11 +3,11 @@ package admin
 import (
 	"context"
 	"github.com/gin-gonic/gin"
+	"srbac/app"
 	"srbac/cache"
 	"srbac/controllers"
 	"srbac/libraries/log"
 	"srbac/models"
-	"srbac/srbac"
 )
 
 var ctx = context.Background()
@@ -31,12 +31,12 @@ func (this *SystemController) RebuildCache(c *gin.Context) {
 		cursor := uint64(0)
 		var err error
 		for {
-			keys, cursor, err = srbac.Rdb.Scan(ctx, cursor, "auth:*", 100).Result()
-			srbac.CheckError(err)
+			keys, cursor, err = app.Rdb.Scan(ctx, cursor, "auth:*", 100).Result()
+			app.CheckError(err)
 
 			if len(keys) >= 1 {
-				_, err = srbac.Rdb.Del(ctx, keys...).Result()
-				srbac.CheckError(err)
+				_, err = app.Rdb.Del(ctx, keys...).Result()
+				app.CheckError(err)
 			}
 			if cursor == 0 {
 				break
@@ -44,13 +44,13 @@ func (this *SystemController) RebuildCache(c *gin.Context) {
 		}
 
 		services := []*models.Service{}
-		re := srbac.Db.Limit(1000).Find(&services)
-		srbac.CheckError(re.Error)
+		re := app.Db.Limit(1000).Find(&services)
+		app.CheckError(re.Error)
 		for _, service := range services {
 			cache.SetService(service)
 			apiItems := []*models.ApiItem{}
-			re = srbac.Db.Where("service_id = ?", service.Id).Find(&apiItems)
-			srbac.CheckError(re.Error)
+			re = app.Db.Where("service_id = ?", service.Id).Find(&apiItems)
+			app.CheckError(re.Error)
 			for _, apiItem := range apiItems {
 				cache.SetApiItem(apiItem)
 			}
@@ -60,16 +60,16 @@ func (this *SystemController) RebuildCache(c *gin.Context) {
 		perPage := 1000
 		roleServices := []*models.RoleService{}
 		for {
-			re = srbac.Db.Order("id ASC").Offset((page - 1) * perPage).Limit(perPage).Find(&roleServices)
-			srbac.CheckError(re.Error)
+			re = app.Db.Order("id ASC").Offset((page - 1) * perPage).Limit(perPage).Find(&roleServices)
+			app.CheckError(re.Error)
 			if len(roleServices) == 0 {
 				break
 			}
 			page++
 			for _, roleService := range roleServices {
 				roleApiItems := []*models.RoleApiItem{}
-				re = srbac.Db.Where("role_id = ? AND service_id = ?", roleService.RoleId, roleService.ServiceId).Find(&roleApiItems)
-				srbac.CheckError(re.Error)
+				re = app.Db.Where("role_id = ? AND service_id = ?", roleService.RoleId, roleService.ServiceId).Find(&roleApiItems)
+				app.CheckError(re.Error)
 				if len(roleApiItems) >= 1 {
 					apiItemIds := []int64{}
 					for _, roleApiItem := range roleApiItems {
@@ -79,8 +79,8 @@ func (this *SystemController) RebuildCache(c *gin.Context) {
 				}
 
 				roleDataItems := []*models.RoleDataItem{}
-				re = srbac.Db.Where("role_id = ? AND service_id = ?", roleService.RoleId, roleService.ServiceId).Find(&roleDataItems)
-				srbac.CheckError(re.Error)
+				re = app.Db.Where("role_id = ? AND service_id = ?", roleService.RoleId, roleService.ServiceId).Find(&roleDataItems)
+				app.CheckError(re.Error)
 				if len(roleDataItems) >= 1 {
 					dataItemIds := []int64{}
 					for _, roleDataItem := range roleDataItems {
@@ -90,8 +90,8 @@ func (this *SystemController) RebuildCache(c *gin.Context) {
 				}
 
 				roleMenuItems := []*models.RoleMenuItem{}
-				re = srbac.Db.Where("role_id = ? AND service_id = ?", roleService.RoleId, roleService.ServiceId).Find(&roleMenuItems)
-				srbac.CheckError(re.Error)
+				re = app.Db.Where("role_id = ? AND service_id = ?", roleService.RoleId, roleService.ServiceId).Find(&roleMenuItems)
+				app.CheckError(re.Error)
 				if len(roleMenuItems) >= 1 {
 					menuItemIds := []int64{}
 					for _, roleMenuItem := range roleMenuItems {

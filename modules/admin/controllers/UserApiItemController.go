@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
+	"srbac/app"
 	"srbac/cache"
 	"srbac/code"
 	"srbac/controllers"
@@ -12,7 +13,6 @@ import (
 	"srbac/libraries/utils"
 	"srbac/logics"
 	"srbac/models"
-	"srbac/srbac"
 )
 
 // 用户的接口权限
@@ -30,28 +30,28 @@ func (this *UserApiItemController) Edit(c *gin.Context) {
 	referer := this.GetReferer(c, fmt.Sprintf("/admin/user-service/list?userId=%d", userId))
 
 	userService := &models.UserService{}
-	re := srbac.Db.First(userService, userServiceId)
+	re := app.Db.First(userService, userServiceId)
 	if errors.Is(re.Error, gorm.ErrRecordNotFound) {
 		this.Redirect(c, referer)
 	}
-	srbac.CheckError(re.Error)
+	app.CheckError(re.Error)
 
 	models.UserServicesLoadServices([]*models.UserService{userService})
 
 	user := &models.User{}
-	re = srbac.Db.First(user, userService.UserId)
+	re = app.Db.First(user, userService.UserId)
 	if errors.Is(re.Error, gorm.ErrRecordNotFound) {
 		this.Redirect(c, referer)
 	}
-	srbac.CheckError(re.Error)
+	app.CheckError(re.Error)
 
 	apiItems := []*models.ApiItem{}
-	re = logics.WithApiItemsOrder(srbac.Db.Where("service_id = ?", userService.ServiceId)).Limit(1000).Find(&apiItems)
-	srbac.CheckError(re.Error)
+	re = logics.WithApiItemsOrder(app.Db.Where("service_id = ?", userService.ServiceId)).Limit(1000).Find(&apiItems)
+	app.CheckError(re.Error)
 
 	userApiItems := []*models.UserApiItem{}
-	re = srbac.Db.Where("user_id = ? AND service_id = ?", userService.UserId, userService.ServiceId).Limit(1000).Find(&userApiItems)
-	srbac.CheckError(re.Error)
+	re = app.Db.Where("user_id = ? AND service_id = ?", userService.UserId, userService.ServiceId).Limit(1000).Find(&userApiItems)
+	app.CheckError(re.Error)
 
 	apiItemIds := []int64{}
 	for _, userApiItem := range userApiItems {
@@ -60,9 +60,9 @@ func (this *UserApiItemController) Edit(c *gin.Context) {
 
 	if c.Request.Method == "POST" {
 		err := c.Request.ParseForm()
-		srbac.CheckError(err)
+		app.CheckError(err)
 		newApiItemIds := utils.ToSliceInt64(c.Request.PostForm["api_item_id[]"])
-		if err := srbac.Db.Transaction(func(db *gorm.DB) error {
+		if err := app.Db.Transaction(func(db *gorm.DB) error {
 			// 删除
 			for _, userApiItem := range userApiItems {
 				if !utils.InSlice(userApiItem.ApiItemId, newApiItemIds) {

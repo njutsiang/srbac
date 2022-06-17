@@ -1,6 +1,6 @@
 package models
 
-import "srbac/srbac"
+import "srbac/app"
 
 // 角色的关联数据模型
 type RoleRelation interface {
@@ -23,8 +23,8 @@ func (models RoleRelations) LoadRoles() {
 		roleIds = append(roleIds, model.GetRoleId())
 	}
 	roles := []*Role{}
-	re := srbac.Db.Find(&roles, roleIds)
-	srbac.CheckError(re.Error)
+	re := app.Db.Find(&roles, roleIds)
+	app.CheckError(re.Error)
 
 	// 处理成以 Id 为键的 Map
 	roleMap := map[int64]*Role{}

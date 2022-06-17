@@ -4,12 +4,12 @@ import (
 	"errors"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
+	"srbac/app"
 	"srbac/cache"
 	"srbac/controllers"
 	"srbac/libraries/utils"
 	"srbac/logics"
 	"srbac/models"
-	"srbac/srbac"
 	"time"
 )
 
@@ -25,16 +25,16 @@ func (this *MenuItemController) List(c *gin.Context) {
 	serviceId := utils.ToInt(c.Query("serviceId"))
 
 	count := int64(0)
-	find := srbac.Db.Model(&models.MenuItem{})
+	find := app.Db.Model(&models.MenuItem{})
 	if serviceId > 0 {
 		find = find.Where("service_id = ?", serviceId)
 	}
 	re := find.Count(&count)
-	srbac.CheckError(re.Error)
+	app.CheckError(re.Error)
 
 	menuItems := []*models.MenuItem{}
 	re = find.Order("id asc").Offset((page - 1) * per_page).Limit(per_page).Find(&menuItems)
-	srbac.CheckError(re.Error)
+	app.CheckError(re.Error)
 
 	models.MenuItemsLoadServices(menuItems)
 	serviceIds := logics.ServiceIds()
@@ -83,11 +83,11 @@ func (this *MenuItemController) Edit(c *gin.Context) {
 	}
 
 	menuItem := &models.MenuItem{}
-	re := srbac.Db.First(menuItem, id)
+	re := app.Db.First(menuItem, id)
 	if errors.Is(re.Error, gorm.ErrRecordNotFound) {
 		this.Redirect(c, referer)
 	}
-	srbac.CheckError(re.Error)
+	app.CheckError(re.Error)
 
 	if c.Request.Method == "POST" {
 		params := this.GetPostForm(c)
@@ -121,15 +121,15 @@ func (this *MenuItemController) Delete(c *gin.Context) {
 	}
 
 	roleMenuItems := []*models.RoleMenuItem{}
-	re := srbac.Db.Distinct("role_id", "service_id").Where("menu_item_id = ?", id).Find(&roleMenuItems)
-	srbac.CheckError(re.Error)
+	re := app.Db.Distinct("role_id", "service_id").Where("menu_item_id = ?", id).Find(&roleMenuItems)
+	app.CheckError(re.Error)
 
 	userMenuItems := []*models.UserMenuItem{}
-	re = srbac.Db.Distinct("user_id", "service_id").Where("menu_item_id = ?", id).Find(&userMenuItems)
-	srbac.CheckError(re.Error)
+	re = app.Db.Distinct("user_id", "service_id").Where("menu_item_id = ?", id).Find(&userMenuItems)
+	app.CheckError(re.Error)
 
-	re =srbac.Db.Delete(&models.MenuItem{}, id)
-	srbac.CheckError(re.Error)
+	re = app.Db.Delete(&models.MenuItem{}, id)
+	app.CheckError(re.Error)
 
 	cache.SetRoleMenuItemsByRoleMenuItems(roleMenuItems)
 	cache.SetUserMenuItemsByUserMenuItems(userMenuItems)

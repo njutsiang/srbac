@@ -5,13 +5,13 @@ import (
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 	"net/http"
+	"srbac/app"
 	"srbac/cache"
 	"srbac/code"
 	"srbac/controllers"
 	"srbac/exception"
 	"srbac/libraries/utils"
 	"srbac/models"
-	"srbac/srbac"
 	"time"
 )
 
@@ -26,12 +26,12 @@ func (this *UserController) List(c *gin.Context) {
 	page, per_page := utils.GetPageInfo(query)
 
 	count := int64(0)
-	re := srbac.Db.Model(&models.User{}).Count(&count)
-	srbac.CheckError(re.Error)
+	re := app.Db.Model(&models.User{}).Count(&count)
+	app.CheckError(re.Error)
 
 	users := []*models.User{}
-	re = srbac.Db.Order("id asc").Offset((page - 1) * per_page).Limit(per_page).Find(&users)
-	srbac.CheckError(re.Error)
+	re = app.Db.Order("id asc").Offset((page - 1) * per_page).Limit(per_page).Find(&users)
+	app.CheckError(re.Error)
 
 	this.HTML(c, "./views/admin/user/list.gohtml", map[string]interface{}{
 		"menu": "user",
@@ -74,11 +74,11 @@ func (this *UserController) Edit(c *gin.Context) {
 	}
 
 	user := &models.User{}
-	re := srbac.Db.First(user, id)
+	re := app.Db.First(user, id)
 	if errors.Is(re.Error, gorm.ErrRecordNotFound) {
 		this.Redirect(c, referer)
 	}
-	srbac.CheckError(re.Error)
+	app.CheckError(re.Error)
 
 	if c.Request.Method == "POST" {
 		params := this.GetPostForm(c)
@@ -108,11 +108,11 @@ func (this *UserController) Delete(c *gin.Context) {
 	}
 
 	userServices := []*models.UserService{}
-	re := srbac.Db.Where("user_id = ?", id).Find(&userServices)
-	srbac.CheckError(re.Error)
+	re := app.Db.Where("user_id = ?", id).Find(&userServices)
+	app.CheckError(re.Error)
 
-	re = srbac.Db.Delete(&models.User{}, id)
-	srbac.CheckError(re.Error)
+	re = app.Db.Delete(&models.User{}, id)
+	app.CheckError(re.Error)
 
 	cache.DelUserRoles(id)
 	cache.DelUserApiItemsByUserServices(userServices)

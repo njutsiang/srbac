@@ -4,12 +4,12 @@ import (
 	"errors"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
+	"srbac/app"
 	"srbac/cache"
 	"srbac/code"
 	"srbac/exception"
 	"srbac/libraries/utils"
 	"srbac/models"
-	"srbac/srbac"
 	"time"
 )
 
@@ -24,7 +24,7 @@ func InitSrbacData() {
 func initSrbacService() *models.Service {
 	serviceKey := "srbac-service"
 	service := &models.Service{}
-	re := srbac.Db.Where("`key`  = ?", serviceKey).First(service)
+	re := app.Db.Where("`key`  = ?", serviceKey).First(service)
 	if re.Error == nil {
 		return service
 	}
@@ -42,19 +42,19 @@ func initSrbacService() *models.Service {
 		cache.SetService(service)
 		return service
 	}
-	srbac.CheckError(re.Error)
+	app.CheckError(re.Error)
 	return service
 }
 
 // 初始化 SRBAC 接口节点
 func initSrbacRouters(service *models.Service) {
-	for sort, route := range srbac.Routes {
+	for sort, route := range app.Routes {
 		initSrbacRouter(service, route, sort)
 	}
 }
 
 // 初始化 SRBAC 接口节点
-func initSrbacRouter(service *models.Service, route srbac.Route, sort int) {
+func initSrbacRouter(service *models.Service, route app.Route, sort int) {
 	anonymousUri := []string{
 		"/",
 		"/admin",
@@ -62,7 +62,7 @@ func initSrbacRouter(service *models.Service, route srbac.Route, sort int) {
 		"/admin/logout",
 	}
 	apiItem := &models.ApiItem{}
-	re := srbac.Db.Where("service_id = ?", service.Id).
+	re := app.Db.Where("service_id = ?", service.Id).
 		Where("method = ?", route.Method).
 		Where("uri = ?", route.Uri).
 		First(apiItem)
@@ -98,7 +98,7 @@ func initSrbacRouter(service *models.Service, route srbac.Route, sort int) {
 		cache.SetApiItem(apiItem)
 		return
 	}
-	srbac.CheckError(re.Error)
+	app.CheckError(re.Error)
 }
 
 // 初始化 SRBAC 超级用户
@@ -107,13 +107,13 @@ func initSrbacSuperUser() {
 	username := "admin"
 	password := "123456"
 	user := &models.User{}
-	re := srbac.Db.First(user, userId)
+	re := app.Db.First(user, userId)
 	if re.Error == nil {
 		return
 	}
 	if errors.Is(re.Error, gorm.ErrRecordNotFound) {
 		passwordHash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-		srbac.CheckError(err)
+		app.CheckError(err)
 		user = &models.User{
 			Id: userId,
 			Name: "超级管理员",
@@ -129,5 +129,5 @@ func initSrbacSuperUser() {
 		}
 		return
 	}
-	srbac.CheckError(re.Error)
+	app.CheckError(re.Error)
 }

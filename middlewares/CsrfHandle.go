@@ -4,10 +4,10 @@ import (
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"srbac/app"
 	"srbac/code"
 	"srbac/exception"
 	"srbac/libraries/utils"
-	"srbac/srbac"
 )
 
 // 处理 CSRF 问题
@@ -19,7 +19,7 @@ func CsrfHandle(c *gin.Context) {
 		maxAge := 24 * 3600
 		if c.Request.Method == "POST" {
 			err := c.Request.ParseForm()
-			srbac.CheckError(err)
+			app.CheckError(err)
 			rememberMe := utils.ToInt(c.Request.PostForm.Get("remember_me"))
 			if rememberMe == 1 {
 				maxAge *= 30
@@ -31,7 +31,7 @@ func CsrfHandle(c *gin.Context) {
 		csrfToken = generateCsrfToken()
 		session.Set("csrf.token", csrfToken)
 		err := session.Save()
-		srbac.CheckError(err)
+		app.CheckError(err)
 	} else {
 		csrfToken = utils.ToString(_csrfToken)
 		sessionCsrfToken = csrfToken
@@ -51,6 +51,6 @@ func generateCsrfToken() string {
 // 获取 POST 请求中的表单令牌
 func getPostCsrfToken(c *gin.Context) string {
 	err := c.Request.ParseForm()
-	srbac.CheckError(err)
+	app.CheckError(err)
 	return c.Request.PostForm.Get("_csrf_token")
 }

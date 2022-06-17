@@ -5,13 +5,13 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
+	"srbac/app"
 	"srbac/cache"
 	"srbac/code"
 	"srbac/controllers"
 	"srbac/exception"
 	"srbac/libraries/utils"
 	"srbac/models"
-	"srbac/srbac"
 )
 
 // 用户的数据权限
@@ -29,28 +29,28 @@ func (this *UserDataItemController) Edit(c *gin.Context) {
 	referer := this.GetReferer(c, fmt.Sprintf("/admin/user-service/list?userId=%d", userId))
 
 	userService := &models.UserService{}
-	re := srbac.Db.First(userService, userServiceId)
+	re := app.Db.First(userService, userServiceId)
 	if errors.Is(re.Error, gorm.ErrRecordNotFound) {
 		this.Redirect(c, referer)
 	}
-	srbac.CheckError(re.Error)
+	app.CheckError(re.Error)
 
 	models.UserServicesLoadServices([]*models.UserService{userService})
 
 	user := &models.User{}
-	re = srbac.Db.First(user, userService.UserId)
+	re = app.Db.First(user, userService.UserId)
 	if errors.Is(re.Error, gorm.ErrRecordNotFound) {
 		this.Redirect(c, referer)
 	}
-	srbac.CheckError(re.Error)
+	app.CheckError(re.Error)
 
 	dataItems := []*models.DataItem{}
-	re = srbac.Db.Where("service_id = ?", userService.ServiceId).Order("id asc").Limit(1000).Find(&dataItems)
-	srbac.CheckError(re.Error)
+	re = app.Db.Where("service_id = ?", userService.ServiceId).Order("id asc").Limit(1000).Find(&dataItems)
+	app.CheckError(re.Error)
 
 	userDataItems := []*models.UserDataItem{}
-	re = srbac.Db.Where("user_id = ? AND service_id = ?", userService.UserId, userService.ServiceId).Limit(1000).Find(&userDataItems)
-	srbac.CheckError(re.Error)
+	re = app.Db.Where("user_id = ? AND service_id = ?", userService.UserId, userService.ServiceId).Limit(1000).Find(&userDataItems)
+	app.CheckError(re.Error)
 
 	dataItemIds := []int64{}
 	for _, userDataItem := range userDataItems {
@@ -59,9 +59,9 @@ func (this *UserDataItemController) Edit(c *gin.Context) {
 
 	if c.Request.Method == "POST" {
 		err := c.Request.ParseForm()
-		srbac.CheckError(err)
+		app.CheckError(err)
 		newDataItemIds := utils.ToSliceInt64(c.Request.PostForm["data_item_id[]"])
-		if err := srbac.Db.Transaction(func(db *gorm.DB) error {
+		if err := app.Db.Transaction(func(db *gorm.DB) error {
 			// 删除
 			for _, userDataItem := range userDataItems {
 				if !utils.InSlice(userDataItem.DataItemId, newDataItemIds) {

@@ -5,11 +5,11 @@ import (
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 	"net/http"
+	"srbac/app"
 	"srbac/cache"
 	"srbac/controllers"
 	"srbac/libraries/utils"
 	"srbac/models"
-	"srbac/srbac"
 	"time"
 )
 
@@ -23,12 +23,12 @@ func (this *ServiceController) List(c *gin.Context) {
 	page, per_page := utils.GetPageInfo(query)
 
 	count := int64(0)
-	re := srbac.Db.Model(&models.Service{}).Count(&count)
-	srbac.CheckError(re.Error)
+	re := app.Db.Model(&models.Service{}).Count(&count)
+	app.CheckError(re.Error)
 
 	services := []*models.Service{}
-	re = srbac.Db.Order("id asc").Offset((page - 1) * per_page).Limit(per_page).Find(&services)
-	srbac.CheckError(re.Error)
+	re = app.Db.Order("id asc").Offset((page - 1) * per_page).Limit(per_page).Find(&services)
+	app.CheckError(re.Error)
 
 	this.HTML(c, "./views/admin/service/list.gohtml", map[string]interface{}{
 		"menu": "service",
@@ -68,11 +68,11 @@ func (this *ServiceController) Edit(c *gin.Context) {
 	}
 
 	service := &models.Service{}
-	re := srbac.Db.First(service, id)
+	re := app.Db.First(service, id)
 	if errors.Is(re.Error, gorm.ErrRecordNotFound) {
 		this.Redirect(c, referer)
 	}
-	srbac.CheckError(re.Error)
+	app.CheckError(re.Error)
 
 	if c.Request.Method == "POST" {
 		params := this.GetPostForm(c)
@@ -102,22 +102,22 @@ func (this *ServiceController) Delete(c *gin.Context) {
 	}
 
 	service := &models.Service{}
-	re := srbac.Db.First(service, id)
+	re := app.Db.First(service, id)
 	if errors.Is(re.Error, gorm.ErrRecordNotFound) {
 		this.Redirect(c, referer)
 	}
-	srbac.CheckError(re.Error)
+	app.CheckError(re.Error)
 
 	roleServices := []*models.RoleService{}
-	re = srbac.Db.Where("service_id = ?", id).Find(&roleServices)
-	srbac.CheckError(re.Error)
+	re = app.Db.Where("service_id = ?", id).Find(&roleServices)
+	app.CheckError(re.Error)
 
 	userServices := []*models.UserService{}
-	re = srbac.Db.Where("service_id = ?", id).Find(&userServices)
-	srbac.CheckError(re.Error)
+	re = app.Db.Where("service_id = ?", id).Find(&userServices)
+	app.CheckError(re.Error)
 
-	re = srbac.Db.Delete(&models.Service{}, id)
-	srbac.CheckError(re.Error)
+	re = app.Db.Delete(&models.Service{}, id)
+	app.CheckError(re.Error)
 
 	cache.DelService(service)
 	cache.DelRoleApiItemsByRoleServices(roleServices)
