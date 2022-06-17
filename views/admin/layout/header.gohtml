@@ -21,6 +21,12 @@
         <a class="dropdown-toggle user-name" data-bs-toggle="dropdown" href="javascript:void(0);">{{.sessionUserName}}</a>
         <ul class="dropdown-menu dropdown-menu-lg-end box-shadow">
             <li><a class="dropdown-item" href="/admin/user/edit?id={{.sessionUserId}}"><i class="bi-person"></i> 个人信息</a></li>
+            <li>
+                <form class="form-post" method="post" action="/admin/system/rebuild-cache">
+                    <input type="hidden" name="{{$.csrfTokenKey}}" value="{{$.csrfTokenValue}}" >
+                    <a class="dropdown-item form-post-btn" href="javascript:void(0);" data-message="你确定要重建所有缓存？"><i class="bi-bootstrap-reboot"></i> 重建缓存</a>
+                </form>
+            </li>
             <li><hr class="dropdown-divider"></li>
             <li><a class="dropdown-item" href="/admin/logout"><i class="bi-box-arrow-right"></i> 退出登录</a></li>
         </ul>

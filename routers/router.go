@@ -113,4 +113,7 @@ func SetRouters(engine *gin.Engine) {
 	// 用户服务菜单节点分配
 	srbac.GET("/admin/user-menu-item/edit", (&admin.UserMenuItemController{}).Edit, "给用户分配菜单节点")
 	srbac.POST("/admin/user-menu-item/edit", (&admin.UserMenuItemController{}).Edit, "给用户分配菜单节点")
+
+	// 系统管理
+	srbac.POST("/admin/system/rebuild-cache", (&admin.SystemController{}).RebuildCache, "重建所有缓存")
 }

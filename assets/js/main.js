@@ -13,4 +13,12 @@ $(function(){
             }
         });
     });
+    $('.form-post').each(function(){
+        var that = $(this);
+        that.find('.form-post-btn').click(function(){
+            if (confirm($(this).attr('data-message'))) {
+                that.submit();
+            }
+        });
+    });
 });
