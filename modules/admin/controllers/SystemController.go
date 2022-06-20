@@ -6,7 +6,6 @@ import (
 	"srbac/app"
 	"srbac/cache"
 	"srbac/controllers"
-	"srbac/libraries/log"
 	"srbac/models"
 )
 
@@ -22,7 +21,7 @@ func (this *SystemController) RebuildCache(c *gin.Context) {
 	go func() {
 		defer func() {
 			if err := recover(); err != nil {
-				log.Error(err)
+				app.Error(err)
 			}
 		}()
 

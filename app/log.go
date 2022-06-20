@@ -1,4 +1,4 @@
-package log
+package app
 
 import (
 	"fmt"
@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-// 错误日志
+// 记录错误日志
 func Error(err interface{}) {
 	// 错误信息
 	message := ""

@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"srbac/app"
 	"srbac/exception"
-	"srbac/libraries/log"
 )
 
 // 处理 panic 抛出的异常
@@ -30,7 +29,7 @@ func ErrorHandle(ctx *gin.Context) {
 				}
 				message = err.(error).Error()
 			}
-			log.Error(err)
+			app.Error(err)
 			handleHtmlError(ctx, code, message)
 
 			// 执行 Abort() 结束当前请求，否则程序会继续执行 Controller
@@ -51,7 +50,7 @@ func handleJsonError(ctx *gin.Context, jsonError *app.JsonError) {
 		},
 	})
 	if _, err := ctx.Writer.Write(jsonString); err != nil {
-		log.Error(err)
+		app.Error(err)
 	}
 }
 

@@ -7,9 +7,8 @@ import (
 	"mime/multipart"
 	"net/http"
 	"srbac/app"
+	"srbac/app/utils"
 	"srbac/code"
-	"srbac/libraries/log"
-	"srbac/libraries/utils"
 	"srbac/models"
 )
 
@@ -26,10 +25,10 @@ func (this *Controller) HTML(ctx *gin.Context, filename string, params ...map[st
 func (this *Controller) GetPostForm(ctx *gin.Context) map[string]interface{} {
 	if ctx.Request.Method == "POST" && ctx.Request.Header.Get("Content-Type") == "application/x-www-form-urlencoded" {
 		if err := ctx.Request.ParseForm(); err != nil {
-			log.Error(err)
+			app.Error(err)
 			return map[string]interface{}{}
 		}
-		return utils.ToMapInterfaces(ctx.Request.PostForm)
+		return utils.ToMap(ctx.Request.PostForm)
 	}
 	return map[string]interface{}{}
 }
@@ -39,7 +38,7 @@ func (this *Controller) GetPostMultipartForm(ctx *gin.Context) *multipart.Form {
 	contentType := ctx.Request.Header.Get("Content-Type")
 	if ctx.Request.Method == "POST" && len(contentType) >= 19 && contentType[0:19] == "multipart/form-data" {
 		if err := ctx.Request.ParseMultipartForm(app.Engine.MaxMultipartMemory); err != nil {
-			log.Error(err)
+			app.Error(err)
 		}
 	}
 	return ctx.Request.MultipartForm
@@ -51,7 +50,7 @@ func (this *Controller) GetPostJson(ctx *gin.Context) map[string]interface{} {
 	if ctx.Request.Method == "POST" && len(contentType) >= 16 && contentType[0:16] == "application/json" {
 		data := map[string]interface{}{}
 		if err := ctx.BindJSON(&data); err != nil {
-			log.Error(data)
+			app.Error(data)
 		}
 		return data
 	}
@@ -64,7 +63,7 @@ func (this *Controller) GetPostJsonSlice(ctx *gin.Context) []interface{} {
 	if ctx.Request.Method == "POST" && len(contentType) >= 16 && contentType[0:16] == "application/json" {
 		data := []interface{}{}
 		if err := ctx.BindJSON(&data); err != nil {
-			log.Error(data)
+			app.Error(data)
 		}
 		return data
 	}
@@ -75,7 +74,7 @@ func (this *Controller) GetPostJsonSlice(ctx *gin.Context) []interface{} {
 func (this *Controller) GetPostRaw(ctx *gin.Context) string {
 	body, err := ioutil.ReadAll(ctx.Request.Body)
 	if err != nil {
-		log.Error(err)
+		app.Error(err)
 	}
 	return string(body)
 }

@@ -16,10 +16,24 @@ func ToInt64(data interface{}) int64 {
 	switch data.(type) {
 	case int:
 		return int64(data.(int))
+	case uint:
+		return int64(data.(uint))
+	case int8:
+		return int64(data.(int8))
+	case uint8:
+		return int64(data.(uint8))
+	case int16:
+		return int64(data.(int16))
+	case uint16:
+		return int64(data.(uint16))
 	case int32:
 		return int64(data.(int32))
+	case uint32:
+		return int64(data.(uint32))
 	case int64:
 		return data.(int64)
+	case uint64:
+		return int64(data.(uint64))
 	case float32:
 		return int64(data.(float32))
 	case float64:
@@ -51,7 +65,7 @@ func ToInt(data interface{}) int {
 // 转为字符串
 func ToString(data interface{}) string {
 	switch data.(type) {
-	case int, int32, int64, float32, float64, sql.NullInt32, sql.NullInt64:
+	case int, uint, int8, uint8, int16, uint16, int32, uint32, int64, uint64, float32, float64, sql.NullInt32, sql.NullInt64:
 		return strconv.Itoa(int(ToInt64(data)))
 	case sql.NullString:
 		if data.(sql.NullString).Valid {
@@ -64,7 +78,7 @@ func ToString(data interface{}) string {
 }
 
 // 转为接口集合
-func ToMapInterfaces(data interface{}) map[string]interface{} {
+func ToMap(data interface{}) map[string]interface{} {
 	switch data.(type) {
 	case map[string]interface{}:
 		return data.(map[string]interface{})
@@ -79,7 +93,7 @@ func ToMapInterfaces(data interface{}) map[string]interface{} {
 }
 
 // 转为接口切片
-func ToSliceInterface(data interface{}) []interface{} {
+func ToSlice(data interface{}) []interface{} {
 	switch data.(type) {
 	case []interface{}:
 		return data.([]interface{})
@@ -146,7 +160,7 @@ func IsSet(data map[string]interface{}, key string) bool {
 // 是否是数值，或是否可以转为数值（整数和浮点数）
 func IsNumeric(data interface{}) bool {
 	switch data.(type) {
-	case int, int32, int64, float32, float64:
+	case int, uint, int8, uint8, int16, uint16, int32, uint32, int64, uint64, float32, float64:
 		return true
 	case sql.NullInt32:
 		if data.(sql.NullInt32).Valid {
@@ -170,7 +184,9 @@ func IsNumeric(data interface{}) bool {
 // 是否是字符串，或是否可以转为字符串
 func IsString(data interface{}) bool {
 	switch data.(type) {
-	case int, int32, int64, float32, float64, string:
+	case string:
+		return true
+	case int, uint, int8, uint8, int16, uint16, int32, uint32, int64, uint64, float32, float64:
 		return true
 	case sql.NullInt32:
 		if data.(sql.NullInt32).Valid {

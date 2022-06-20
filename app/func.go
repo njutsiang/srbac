@@ -5,8 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"html/template"
 	"net/http"
-	"srbac/libraries/log"
-	"srbac/libraries/utils"
+	"srbac/app/utils"
 	"strings"
 )
 
@@ -49,10 +48,10 @@ func HtmlStatus(c *gin.Context, code int, filename string, params ...map[string]
 	// 解析所有模板
 	tmpl, err := tmpl.ParseFiles(filenames...)
 	if err != nil {
-		log.Error(err)
+		Error(err)
 		c.Status(http.StatusNotFound)
 		if _, err := c.Writer.Write([]byte(err.Error())); err != nil {
-			log.Error(err)
+			Error(err)
 		}
 		return
 	}

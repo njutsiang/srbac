@@ -8,10 +8,9 @@ import (
 	"gorm.io/gorm"
 	"reflect"
 	"srbac/app"
+	"srbac/app/utils"
 	"srbac/code"
 	"srbac/exception"
-	"srbac/libraries/log"
-	"srbac/libraries/utils"
 	"strings"
 )
 
@@ -39,7 +38,7 @@ func (this *Model) NewValidate() *validator.Validate {
 func (this *Model) NewTranslator() ut.Translator {
 	translator, found := ut.New(en.New(), zh.New()).GetTranslator("zh")
 	if !found {
-		log.Error("指定的语言不存在")
+		app.Error("指定的语言不存在")
 	}
 	return translator
 }
@@ -47,7 +46,7 @@ func (this *Model) NewTranslator() ut.Translator {
 // 注册自定义验证方法
 func (this *Model) RegisterValidation(tag string, fn func(field validator.FieldLevel) bool, messages... string) {
 	if err := this.validate.RegisterValidation(tag, fn); err != nil {
-		log.Error(err)
+		app.Error(err)
 	}
 	message := tag + " error"
 	if len(messages) >= 1 {
@@ -63,11 +62,11 @@ func (this *Model) RegisterTranslation(tag string, message string) {
 	}, func(ut ut.Translator, fe validator.FieldError) string {
 		t, err := ut.T(tag, fe.Field(), fe.Param())
 		if err != nil {
-			log.Error(err)
+			app.Error(err)
 		}
 		return t
 	}); err != nil {
-		log.Error(err)
+		app.Error(err)
 	}
 }
 
@@ -176,7 +175,7 @@ func (this *Model) HasError() bool {
 // 创建数据
 func (this *Model) Create() bool {
 	if !this.refValue.IsValid() {
-		log.Panic("Model.refValue 无效")
+		app.Panic("Model.refValue 无效")
 	}
 	if r := this.GetDb().Create(this.refValue.Interface()); r.Error == nil {
 		return true
@@ -189,7 +188,7 @@ func (this *Model) Create() bool {
 // 更新数据
 func (this *Model) Update() bool {
 	if !this.refValue.IsValid() {
-		log.Panic("Model.refValue 无效")
+		app.Panic("Model.refValue 无效")
 	}
 	if r := this.GetDb().Save(this.refValue.Interface()); r.Error == nil {
 		return true
