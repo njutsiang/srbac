@@ -5,7 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"srbac/app"
-	"srbac/app/utils"
+	"srbac/utils"
 	"srbac/code"
 	"srbac/exception"
 )

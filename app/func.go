@@ -5,7 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"html/template"
 	"net/http"
-	"srbac/app/utils"
+	"srbac/utils"
 	"strings"
 )
 

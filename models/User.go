@@ -4,7 +4,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"reflect"
 	"srbac/app"
-	"srbac/app/utils"
+	"srbac/utils"
 	"time"
 )
 

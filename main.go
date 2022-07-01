@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"srbac/app"
-	"srbac/check"
+	"srbac/app/check"
 	"srbac/middlewares"
 	"srbac/routers"
 )

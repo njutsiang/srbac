@@ -5,11 +5,11 @@ import (
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 	"srbac/app"
-	"srbac/app/utils"
-	"srbac/cache"
+	"srbac/app/cache"
 	"srbac/controllers"
 	"srbac/logics"
 	"srbac/models"
+	"srbac/utils"
 	"time"
 )
 

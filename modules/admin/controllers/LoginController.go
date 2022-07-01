@@ -11,10 +11,10 @@ import (
 	"gorm.io/gorm"
 	"net/http"
 	"srbac/app"
-	"srbac/app/utils"
-	"srbac/cache"
+	"srbac/app/cache"
 	"srbac/controllers"
 	"srbac/models"
+	"srbac/utils"
 	"time"
 )
 

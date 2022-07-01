@@ -3,6 +3,7 @@ package utils
 import (
 	"database/sql"
 	"fmt"
+	"github.com/gin-gonic/gin"
 	"html/template"
 	"math"
 	"net/url"
@@ -86,6 +87,15 @@ func ToMap(data interface{}) map[string]interface{} {
 		result := map[string]interface{}{}
 		for k, v := range data.(url.Values) {
 			result[k] = v[0]
+		}
+		return result
+	case gin.Params:
+		result := map[string]interface{}{}
+		for _, param := range data.(gin.Params) {
+			_, ok := result[param.Key]
+			if !ok {
+				result[param.Key] = param.Value
+			}
 		}
 		return result
 	}
@@ -365,4 +375,30 @@ func InSlice(item interface{}, items interface{}) bool {
 		}
 	}
 	return false
+}
+
+// 移除数组中重复的元素
+func DelRepeated(data []string) []string {
+	hasRepeated := false
+	for i, value := range data {
+		for k, val := range data {
+			if i != k && value == val {
+				hasRepeated = true
+				break
+			}
+		}
+		if hasRepeated {
+			if i == len(data) - 1 {
+				data = data[0:i]
+			} else {
+				data = append(data[0:i], data[i+1:]...)
+			}
+			break
+		}
+	}
+	if hasRepeated {
+		return DelRepeated(data)
+	} else {
+		return data
+	}
 }

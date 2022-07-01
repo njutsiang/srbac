@@ -8,7 +8,7 @@ import (
 	"gorm.io/gorm"
 	"reflect"
 	"srbac/app"
-	"srbac/app/utils"
+	"srbac/utils"
 	"srbac/code"
 	"srbac/exception"
 	"strings"

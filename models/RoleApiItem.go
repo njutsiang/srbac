@@ -3,7 +3,7 @@ package models
 import (
 	"reflect"
 	"srbac/app"
-	"srbac/app/utils"
+	"srbac/utils"
 	"time"
 )
 

@@ -7,7 +7,7 @@ import (
 	"mime/multipart"
 	"net/http"
 	"srbac/app"
-	"srbac/app/utils"
+	"srbac/utils"
 	"srbac/code"
 	"srbac/models"
 )

@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/gin-gonic/gin"
 	"srbac/app"
-	"srbac/cache"
+	"srbac/app/cache"
 	"srbac/controllers"
 	"srbac/models"
 )

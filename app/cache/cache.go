@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"srbac/app"
-	"srbac/app/utils"
 	"srbac/models"
+	"srbac/utils"
 	"time"
 )
 
