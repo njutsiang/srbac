@@ -7,7 +7,6 @@ import (
 	"gorm.io/gorm"
 	"srbac/app"
 	"srbac/app/cache"
-	"srbac/code"
 	"srbac/controllers"
 	"srbac/exception"
 	"srbac/models"
@@ -60,7 +59,7 @@ func (this *UserRoleController) List(c *gin.Context) {
 func (this *UserRoleController) Edit(c *gin.Context) {
 	userId := utils.ToInt64(c.Query("userId"))
 	if userId <= 0 {
-		exception.NewException(code.ParamsError)
+		exception.Throw(exception.ParamsError)
 	}
 	referer := this.GetReferer(c, fmt.Sprintf("/admin/user-role/list?userId=%d", userId))
 
@@ -133,7 +132,7 @@ func (this *UserRoleController) Delete(c *gin.Context) {
 	id := utils.ToInt64(this.GetPostForm(c)["id"])
 	userId := utils.ToInt64(this.GetPostForm(c)["userId"])
 	if id <= 0 || userId <= 0 {
-		exception.NewException(code.ParamsError)
+		exception.Throw(exception.ParamsError)
 	}
 	referer := this.GetReferer(c, fmt.Sprintf("/admin/user-role/list?userId=%d", userId), false)
 	re := app.Db.Delete(&models.UserRole{}, id)

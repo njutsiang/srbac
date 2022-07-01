@@ -6,7 +6,6 @@ import (
 	"gorm.io/gorm"
 	"srbac/app"
 	"srbac/app/cache"
-	"srbac/code"
 	"srbac/exception"
 	"srbac/models"
 	"srbac/utils"
@@ -37,7 +36,7 @@ func initSrbacService() *models.Service {
 		}
 		service.SetRefValue()
 		if !(service.Validate() && service.Create()) {
-			exception.NewException(code.InternalError, service.GetError())
+			exception.Throw(exception.InternalError, service.GetError())
 		}
 		cache.SetService(service)
 		return service
@@ -71,7 +70,7 @@ func initSrbacRouter(service *models.Service, route app.Route, sort int) {
 			apiItem.Sort = int64(sort)
 			apiItem.SetRefValue()
 			if !(apiItem.Validate() && apiItem.Update()) {
-				exception.NewException(code.InternalError, apiItem.GetError())
+				exception.Throw(exception.InternalError, apiItem.GetError())
 			}
 		}
 		return
@@ -93,7 +92,7 @@ func initSrbacRouter(service *models.Service, route app.Route, sort int) {
 		}
 		apiItem.SetRefValue()
 		if !(apiItem.Validate() && apiItem.Create()) {
-			exception.NewException(code.InternalError, apiItem.GetError())
+			exception.Throw(exception.InternalError, apiItem.GetError())
 		}
 		cache.SetApiItem(apiItem)
 		return
@@ -125,7 +124,7 @@ func initSrbacSuperUser() {
 		}
 		user.SetRefValue()
 		if !(user.Validate() && user.Create()) {
-			exception.NewException(code.InternalError, user.GetError())
+			exception.Throw(exception.InternalError, user.GetError())
 		}
 		return
 	}

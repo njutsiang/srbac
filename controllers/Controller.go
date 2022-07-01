@@ -7,9 +7,9 @@ import (
 	"mime/multipart"
 	"net/http"
 	"srbac/app"
-	"srbac/utils"
-	"srbac/code"
+	"srbac/exception"
 	"srbac/models"
+	"srbac/utils"
 )
 
 // 控制器基类
@@ -142,11 +142,11 @@ func (this *Controller) ResponseErrorJson(ctx *gin.Context, data interface{}) {
 func (this *Controller) GetUser(ctx *gin.Context) *models.User {
 	value, exists := ctx.Get("user")
 	if !exists {
-		panic(app.NewJsonError(code.UserNotLogin))
+		panic(app.NewJsonError(exception.UserNotLogin))
 	}
 	user, ok := value.(*models.User)
 	if !ok {
-		panic(app.NewJsonError(code.UserNotLogin))
+		panic(app.NewJsonError(exception.UserNotLogin))
 	}
 	return user
 }

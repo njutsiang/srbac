@@ -5,9 +5,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"srbac/app"
-	"srbac/utils"
-	"srbac/code"
 	"srbac/exception"
+	"srbac/utils"
 )
 
 // 处理 CSRF 问题
@@ -37,7 +36,7 @@ func CsrfHandle(c *gin.Context) {
 		sessionCsrfToken = csrfToken
 	}
 	if c.Request.Method == "POST" && sessionCsrfToken != getPostCsrfToken(c) {
-		exception.NewException(code.CsrfTokenError)
+		exception.Throw(exception.CsrfTokenError)
 	}
 	c.Header("X-Csrf-Token", csrfToken)
 	c.Next()

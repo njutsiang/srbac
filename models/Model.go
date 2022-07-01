@@ -8,9 +8,8 @@ import (
 	"gorm.io/gorm"
 	"reflect"
 	"srbac/app"
-	"srbac/utils"
-	"srbac/code"
 	"srbac/exception"
+	"srbac/utils"
 	"strings"
 )
 
@@ -112,7 +111,7 @@ func (this *Model) setAttributes(data map[string]interface{}) {
 					elemValue.Field(i).Set(reflect.ValueOf(utils.ToNullInt64(value)))
 				}
 			default:
-				exception.NewException(code.UnknownModelFieldType)
+				exception.Throw(exception.UnknownModelFieldType)
 			}
 		}
 	}

@@ -1,6 +1,8 @@
 package app
 
-import "srbac/code"
+import (
+	"srbac/exception"
+)
 
 // 错误
 // HTTP 响应为 JSON
@@ -25,10 +27,10 @@ func NewJsonError(params ...interface{}) *JsonError {
 		switch params[0].(type) {
 		case int:
 			err = params[0].(int)
-		case code.Code:
-			c := params[0].(code.Code)
+		case exception.Code:
+			c := params[0].(exception.Code)
 			err = int(c)
-			message = code.GetMessage(c)
+			message = exception.GetMessage(c)
 			statusCode = err / 1000
 		case string:
 			message = params[0].(string)
@@ -39,8 +41,8 @@ func NewJsonError(params ...interface{}) *JsonError {
 		switch params[0].(type) {
 		case int:
 			err = params[0].(int)
-		case code.Code:
-			err = int(params[0].(code.Code))
+		case exception.Code:
+			err = int(params[0].(exception.Code))
 		}
 		switch params[1].(type) {
 		case string:

@@ -1,4 +1,4 @@
-package code
+package exception
 
 type Code int
 
@@ -22,9 +22,4 @@ var messages = map[Code]string{
 	UserNotLogin: "用户未登录",
 	InternalError: "内部错误",
 	UnknownModelFieldType: "未知的模型字段数据类型",
-}
-
-// 获取错误提示语
-func GetMessage(code Code) string {
-	return messages[code]
 }

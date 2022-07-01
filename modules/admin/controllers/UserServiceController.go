@@ -7,7 +7,6 @@ import (
 	"gorm.io/gorm"
 	"srbac/app"
 	"srbac/app/cache"
-	"srbac/code"
 	"srbac/controllers"
 	"srbac/exception"
 	"srbac/logics"
@@ -88,7 +87,7 @@ func (this *UserServiceController) List(c *gin.Context) {
 func (this *UserServiceController) Edit(c *gin.Context) {
 	userId := utils.ToInt64(c.Query("userId"))
 	if userId <= 0 {
-		exception.NewException(code.ParamsError)
+		exception.Throw(exception.ParamsError)
 	}
 	referer := this.GetReferer(c, fmt.Sprintf("/admin/user-service/list?userId=%d", userId))
 
@@ -176,7 +175,7 @@ func (this *UserServiceController) Delete(c *gin.Context) {
 	id := utils.ToInt(this.GetPostForm(c)["id"])
 	userId := utils.ToInt(this.GetPostForm(c)["userId"])
 	if id <= 0 || userId <= 0 {
-		exception.NewException(code.ParamsError)
+		exception.Throw(exception.ParamsError)
 	}
 	referer := this.GetReferer(c, fmt.Sprintf("/admin/user-service/list?userId=%d", userId), false)
 

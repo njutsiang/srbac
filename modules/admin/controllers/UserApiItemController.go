@@ -7,7 +7,6 @@ import (
 	"gorm.io/gorm"
 	"srbac/app"
 	"srbac/app/cache"
-	"srbac/code"
 	"srbac/controllers"
 	"srbac/exception"
 	"srbac/logics"
@@ -25,7 +24,7 @@ func (this *UserApiItemController) Edit(c *gin.Context) {
 	userId := utils.ToInt(c.Query("userId"))
 	userServiceId := utils.ToInt(c.Query("userServiceId"))
 	if userServiceId <= 0 {
-		exception.NewException(code.ParamsError)
+		exception.Throw(exception.ParamsError)
 	}
 	referer := this.GetReferer(c, fmt.Sprintf("/admin/user-service/list?userId=%d", userId))
 

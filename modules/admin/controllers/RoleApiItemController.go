@@ -7,7 +7,6 @@ import (
 	"gorm.io/gorm"
 	"srbac/app"
 	"srbac/app/cache"
-	"srbac/code"
 	"srbac/controllers"
 	"srbac/exception"
 	"srbac/logics"
@@ -25,7 +24,7 @@ func (this *RoleApiItemController) Edit(c *gin.Context) {
 	roleId := utils.ToInt(c.Query("roleId"))
 	roleServiceId := utils.ToInt(c.Query("roleServiceId"))
 	if roleId <= 0 || roleServiceId <= 0 {
-		exception.NewException(code.ParamsError)
+		exception.Throw(exception.ParamsError)
 	}
 	referer := this.GetReferer(c, fmt.Sprintf("/admin/role-service/list?roleId=%d", roleId))
 

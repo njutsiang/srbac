@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"srbac/app"
 	"srbac/app/cache"
-	"srbac/code"
 	"srbac/controllers"
 	"srbac/exception"
 	"srbac/models"
@@ -70,7 +69,7 @@ func (this *UserController) Edit(c *gin.Context) {
 		this.Redirect(c, referer)
 	}
 	if id == 1 && this.GetUserId(c) != 1 {
-		exception.NewException(code.NoPermission)
+		exception.Throw(exception.NoPermission)
 	}
 
 	user := &models.User{}

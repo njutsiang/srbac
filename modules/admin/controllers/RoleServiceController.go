@@ -7,7 +7,6 @@ import (
 	"gorm.io/gorm"
 	"srbac/app"
 	"srbac/app/cache"
-	"srbac/code"
 	"srbac/controllers"
 	"srbac/exception"
 	"srbac/models"
@@ -27,7 +26,7 @@ func (this *RoleServiceController) List(c *gin.Context) {
 
 	roleId := utils.ToInt(c.Query("roleId"))
 	if roleId <= 0 {
-		exception.NewException(code.ParamsError)
+		exception.Throw(exception.ParamsError)
 	}
 
 	role := &models.Role{}
@@ -60,7 +59,7 @@ func (this *RoleServiceController) List(c *gin.Context) {
 func (this *RoleServiceController) Edit(c *gin.Context) {
 	roleId := utils.ToInt64(c.Query("roleId"))
 	if roleId <= 0 {
-		exception.NewException(code.ParamsError)
+		exception.Throw(exception.ParamsError)
 	}
 	referer := this.GetReferer(c, fmt.Sprintf("/admin/role-service/list?roleId=%d", roleId))
 
@@ -143,7 +142,7 @@ func (this *RoleServiceController) Delete(c *gin.Context) {
 	id := utils.ToInt64(this.GetPostForm(c)["id"])
 	roleId := utils.ToInt64(this.GetPostForm(c)["roleId"])
 	if id <= 0 || roleId <= 0 {
-		exception.NewException(code.ParamsError)
+		exception.Throw(exception.ParamsError)
 	}
 	referer := this.GetReferer(c, fmt.Sprintf("/admin/role-service/list?roleId=%d", roleId), false)
 
